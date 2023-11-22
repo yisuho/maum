@@ -7,5 +7,6 @@ import { SurveyRepository } from './surveys.repository';
 @Module({
   imports: [databaseModule],
   providers: [SurveysResolver, SurveysService, ...SurveyRepository],
+  exports: [SurveysService],
 })
 export class SurveysModule {}

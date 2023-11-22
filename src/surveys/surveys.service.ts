@@ -14,7 +14,6 @@ export class SurveysService {
   async create(createSurveyInput: CreateSurveyInput): Promise<Survey> {
     const createSurvey = this.surveyRepository.create(createSurveyInput);
     const saveSurvey = await this.surveyRepository.save(createSurvey);
-
     return saveSurvey;
   }
 
@@ -31,19 +30,20 @@ export class SurveysService {
     return findOne;
   }
 
-  async update(updateSurveyInput: UpdateSurveyInput): Promise<Survey> {
-    const { id } = updateSurveyInput;
-    const update = await this.surveyRepository.update(id, updateSurveyInput);
+  async update(
+    id: number,
+    updateSurveyInput: UpdateSurveyInput,
+  ): Promise<Survey> {
+    await this.surveyRepository.update(id, updateSurveyInput);
 
     const updateSurveyResult = await this.findOne(id);
     return updateSurveyResult;
   }
 
-  async remove(id: number): Promise<Survey> {
+  async remove(id: number): Promise<boolean> {
     const survey = await this.findOne(id);
-    const removeSurvey = await this.surveyRepository.remove(survey);
-    console.log(removeSurvey);
+    await this.surveyRepository.remove(survey);
 
-    return removeSurvey;
+    return true;
   }
 }

@@ -35,14 +35,17 @@ export class SurveysResolver {
   async updateSurvey(
     @Args('updateSurveyInput') updateSurveyInput: UpdateSurveyInput,
   ): Promise<Survey> {
-    const updateSurvey = this.surveysService.update(updateSurveyInput);
+    const updateSurvey = this.surveysService.update(
+      updateSurveyInput.id,
+      updateSurveyInput,
+    );
     return updateSurvey;
   }
 
-  @Mutation(() => Survey)
+  @Mutation(() => Boolean)
   async removeSurvey(
     @Args('id', { type: () => Int }) id: number,
-  ): Promise<Survey> {
+  ): Promise<boolean> {
     const removeSurvey = await this.surveysService.remove(id);
 
     return removeSurvey;

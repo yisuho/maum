@@ -12,6 +12,7 @@ import appConfig from './config/app.config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filter';
 import { LoggingPlugin } from './logger/logger.service';
+import { QuestionsModule } from './questions/questions.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { LoggingPlugin } from './logger/logger.service';
     }),
     databaseModule,
     SurveysModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [

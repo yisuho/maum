@@ -2,12 +2,12 @@ import { InputType, Field } from '@nestjs/graphql';
 
 @InputType()
 export class CreateSurveyInput {
-  @Field({ nullable: false })
+  @Field({ nullable: false, description: 'Survey Title' })
   title: string;
 
-  @Field({ nullable: false })
+  @Field({ nullable: true, description: 'Survey Description' })
   description: string;
 
-  @Field({ nullable: false })
+  @Field({ nullable: true, description: 'Survey Footer' })
   footer: string;
 }

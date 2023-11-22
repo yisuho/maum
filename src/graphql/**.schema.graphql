@@ -2,88 +2,58 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Question {
-  """Question ID"""
+type Survey {
+  """"""
   id: Int!
-
-  """Parents Survey """
-  parentsSurvey: Survey!
-  parentsSurveyId: Int!
-  questionNumber: Int!
-  content: String!
+  title: String!
+  description: String!
+  footer: String!
 }
 
-type Survey {
-  """Survey ID"""
+type Question {
+  """"""
   id: Int!
-
-  """Survey Title"""
-  title: String!
-
-  """Survey Description"""
-  description: String!
-
-  """Survey Footer"""
-  footer: String!
-  question: [Question!]!
+  survey_id: Int!
+  number: Int!
+  content: String!
 }
 
 type Query {
   surveys: [Survey!]!
   survey(id: Int!): Survey!
+  questions: [Question!]!
   question(id: Int!): Question!
 }
 
 type Mutation {
   createSurvey(createSurveyInput: CreateSurveyInput!): Survey!
   updateSurvey(updateSurveyInput: UpdateSurveyInput!): Survey!
-  removeSurvey(id: Int!): Boolean!
+  removeSurvey(id: Int!): Survey!
   createQuestion(createQuestionInput: CreateQuestionInput!): Question!
   updateQuestion(updateQuestionInput: UpdateQuestionInput!): Question!
-  removeQuestion(id: Int!): Boolean!
+  removeQuestion(id: Int!): Question!
 }
 
 input CreateSurveyInput {
-  """Survey Title"""
   title: String!
-
-  """Survey Description"""
-  description: String
-
-  """Survey Footer"""
-  footer: String
+  description: String!
+  footer: String!
 }
 
 input UpdateSurveyInput {
-  """Survey Title"""
   title: String
-
-  """Survey Description"""
   description: String
-
-  """Survey Footer"""
   footer: String
   id: Int!
 }
 
 input CreateQuestionInput {
-  """Parents Survey ID"""
-  parentsSurveyId: Int!
-
-  """Question No."""
-  questionNumber: Int!
-
-  """Question Content"""
-  content: String!
+  """Example field (placeholder)"""
+  exampleField: Int!
 }
 
 input UpdateQuestionInput {
-  """Question ID"""
+  """Example field (placeholder)"""
+  exampleField: Int
   id: Int!
-
-  """Question No."""
-  questionNumber: Int
-
-  """Question Content"""
-  content: String
 }
