@@ -6,7 +6,7 @@ export class CreateSurveyInput {
   title: string;
 
   @Field({ nullable: false })
-  content: string;
+  description: string;
 
   @Field({ nullable: false })
   footer: string;

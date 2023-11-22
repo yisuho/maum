@@ -9,7 +9,7 @@ import { databaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import postgresqlConfig from './config/postgresql.config';
 import appConfig from './config/app.config';
-import { APP_FILTER, APP_PIPE, HttpAdapterHost } from '@nestjs/core';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filter';
 import { LoggingPlugin } from './logger/logger.service';
 
@@ -31,6 +31,7 @@ import { LoggingPlugin } from './logger/logger.service';
         const res = {
           message: error.message,
           code: error.extensions.code,
+          path: error.path,
           locations: error.locations,
         };
         console.error(res);
@@ -48,10 +49,10 @@ import { LoggingPlugin } from './logger/logger.service';
       provide: APP_PIPE,
       useClass: ValidationPipe,
     },
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: ApolloAllExceptionsFilter,
-    // },
+    {
+      provide: APP_FILTER,
+      useClass: ApolloAllExceptionsFilter,
+    },
   ],
 })
 export class AppModule {}

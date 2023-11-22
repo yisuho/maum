@@ -6,9 +6,7 @@ import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filte
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,
-  });
+  const app = await NestFactory.create(AppModule);
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
   app.useGlobalFilters(new ApolloAllExceptionsFilter());
   app.useGlobalPipes(

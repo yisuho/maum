@@ -14,7 +14,7 @@ export class Survey {
 
   @Field(() => String, { nullable: false })
   @Column()
-  content: string;
+  description: string;
 
   @Field(() => String, { nullable: false })
   @Column()

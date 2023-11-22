@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateSurveyInput } from './dto/create-survey.input';
 import { UpdateSurveyInput } from './dto/update-survey.input';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { Survey } from './entities/survey.entity';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class SurveysService {
@@ -11,26 +12,38 @@ export class SurveysService {
     private surveyRepository: Repository<Survey>,
   ) {}
   async create(createSurveyInput: CreateSurveyInput): Promise<Survey> {
-    const { title, content, footer } = createSurveyInput;
     const createSurvey = this.surveyRepository.create(createSurveyInput);
     const saveSurvey = await this.surveyRepository.save(createSurvey);
 
     return saveSurvey;
   }
 
-  findAll() {
-    return `This action returns all surveys`;
+  async findAll(): Promise<Survey[]> {
+    const findAll = this.surveyRepository.find();
+    return findAll;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} survey`;
+  async findOne(id: number): Promise<Survey> {
+    const findOne = await this.surveyRepository.findOne({ where: { id } });
+    if (!findOne) {
+      throw new ApolloError('해당 설문지가 없습니다');
+    }
+    return findOne;
   }
 
-  update(id: number, updateSurveyInput: UpdateSurveyInput) {
-    return `This action updates a #${id} survey`;
+  async update(updateSurveyInput: UpdateSurveyInput): Promise<Survey> {
+    const { id } = updateSurveyInput;
+    const update = await this.surveyRepository.update(id, updateSurveyInput);
+
+    const updateSurveyResult = await this.findOne(id);
+    return updateSurveyResult;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} survey`;
+  async remove(id: number): Promise<Survey> {
+    const survey = await this.findOne(id);
+    const removeSurvey = await this.surveyRepository.remove(survey);
+    console.log(removeSurvey);
+
+    return removeSurvey;
   }
 }

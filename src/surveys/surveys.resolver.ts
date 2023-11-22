@@ -4,6 +4,7 @@ import { Survey } from './entities/survey.entity';
 import { CreateSurveyInput } from './dto/create-survey.input';
 import { UpdateSurveyInput } from './dto/update-survey.input';
 import { ApolloError } from 'apollo-server-express';
+import { DeleteResult } from 'typeorm';
 
 @Resolver(() => Survey)
 export class SurveysResolver {
@@ -12,31 +13,38 @@ export class SurveysResolver {
   @Mutation(() => Survey)
   async createSurvey(
     @Args('createSurveyInput') createSurveyInput: CreateSurveyInput,
-  ) {
-    throw new ApolloError('aaa');
+  ): Promise<Survey> {
     const createSurvey = await this.surveysService.create(createSurveyInput);
     return createSurvey;
   }
 
   @Query(() => [Survey], { name: 'surveys' })
-  findAll() {
-    return this.surveysService.findAll();
+  async findAll(): Promise<Survey[]> {
+    const findAll = this.surveysService.findAll();
+    return findAll;
   }
 
   @Query(() => Survey, { name: 'survey' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.surveysService.findOne(id);
+  async findOne(@Args('id', { type: () => Int }) id: number): Promise<Survey> {
+    const findOne = await this.surveysService.findOne(id);
+
+    return findOne;
   }
 
   @Mutation(() => Survey)
-  updateSurvey(
+  async updateSurvey(
     @Args('updateSurveyInput') updateSurveyInput: UpdateSurveyInput,
-  ) {
-    return this.surveysService.update(updateSurveyInput.id, updateSurveyInput);
+  ): Promise<Survey> {
+    const updateSurvey = this.surveysService.update(updateSurveyInput);
+    return updateSurvey;
   }
 
   @Mutation(() => Survey)
-  removeSurvey(@Args('id', { type: () => Int }) id: number) {
-    return this.surveysService.remove(id);
+  async removeSurvey(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<Survey> {
+    const removeSurvey = await this.surveysService.remove(id);
+
+    return removeSurvey;
   }
 }

@@ -6,7 +6,7 @@ type Survey {
   """"""
   id: Int!
   title: String!
-  content: String!
+  description: String!
   footer: String!
 }
 
@@ -23,13 +23,13 @@ type Mutation {
 
 input CreateSurveyInput {
   title: String!
-  content: String!
+  description: String!
   footer: String!
 }
 
 input UpdateSurveyInput {
   title: String
-  content: String
+  description: String
   footer: String
   id: Int!
 }
