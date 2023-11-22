@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import postgresqlConfig from './config/postgresql.config';
 import appConfig from './config/app.config';
 import { APP_FILTER, APP_PIPE, HttpAdapterHost } from '@nestjs/core';
-import { AllExceptionsFilter } from './http-exception/http-exception.filter';
+import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filter';
 import { LoggingPlugin } from './logger/logger.service';
 
 @Module({
@@ -25,6 +25,18 @@ import { LoggingPlugin } from './logger/logger.service';
       driver: ApolloDriver,
       playground: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.graphql'),
+      // plugins: [new LoggingPlugin()],
+      formatError: (error) => {
+        // 여기에서 에러를 커스텀 포맷으로 변환
+        const res = {
+          message: error.message,
+          code: error.extensions.code,
+          locations: error.locations,
+        };
+        console.error(res);
+
+        return res;
+      },
     }),
     databaseModule,
     SurveysModule,
@@ -36,6 +48,10 @@ import { LoggingPlugin } from './logger/logger.service';
       provide: APP_PIPE,
       useClass: ValidationPipe,
     },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: ApolloAllExceptionsFilter,
+    // },
   ],
 })
 export class AppModule {}

@@ -3,6 +3,7 @@ import { SurveysService } from './surveys.service';
 import { Survey } from './entities/survey.entity';
 import { CreateSurveyInput } from './dto/create-survey.input';
 import { UpdateSurveyInput } from './dto/update-survey.input';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(() => Survey)
 export class SurveysResolver {
@@ -12,6 +13,7 @@ export class SurveysResolver {
   async createSurvey(
     @Args('createSurveyInput') createSurveyInput: CreateSurveyInput,
   ) {
+    throw new ApolloError('aaa');
     const createSurvey = await this.surveysService.create(createSurveyInput);
     return createSurvey;
   }

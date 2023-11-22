@@ -7,7 +7,7 @@ export class LoggingPlugin implements ApolloServerPlugin {
     console.log('Request started');
     return {
       async willSendResponse() {
-        console.log('will send reponse');
+        console.log('Will send response');
       },
     };
   }

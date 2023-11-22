@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import {
   ArgumentsHost,
   BadRequestException,
@@ -7,15 +8,25 @@ import {
 } from '@nestjs/common';
 import { AbstractHttpAdapter } from '@nestjs/core';
 import { GqlArgumentsHost, GqlExceptionFilter } from '@nestjs/graphql';
+import { ApolloError } from 'apollo-server-express';
 
-@Catch(BadRequestException)
-export class AllExceptionsFilter implements GqlExceptionFilter {
-  constructor(private readonly httpAdapter: AbstractHttpAdapter) {}
-
-  catch(exception: HttpException, host: ArgumentsHost) {
+@Catch(ApolloError)
+export class ApolloAllExceptionsFilter implements GqlExceptionFilter {
+  catch(exception: ApolloError, host: ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
-    console.log(exception, gqlHost);
+    const context = gqlHost.getContext();
+    const response = context.res as Response;
 
-    return exception;
+    const status = exception.extensions.exception.status || 500;
+    const message = exception.message;
+    const code = exception.extensions.code;
+    const stack = exception.stack;
+    const res = {
+      statusCode: status,
+      message: message,
+      code: code,
+      stack: stack,
+    };
+    console.log(res);
   }
 }
