@@ -48,7 +48,10 @@ export class SurveysService {
 
   async remove(id: number): Promise<boolean> {
     const survey = await this.findOne(id);
-    await this.surveyRepository.remove(survey);
+    const removeSurvey = await this.surveyRepository.remove(survey);
+    if (removeSurvey.id) {
+      return false;
+    }
 
     return true;
   }

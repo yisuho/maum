@@ -1,10 +1,12 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Choice } from 'src/choices/entities/choice.entity';
 import { Survey } from 'src/surveys/entities/survey.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -28,10 +30,14 @@ export class Question {
   parentsSurveyId: number;
 
   @Field(() => Int, { nullable: false })
-  @Column({ name: 'question_number' })
+  @Column({ name: 'question_No' })
   questionNumber: number;
 
   @Field(() => String, { nullable: false })
   @Column()
   content: string;
+
+  @Field(() => [Choice])
+  @OneToMany(() => Choice, (choice) => choice.parentsQuestion, { lazy: true })
+  choice: Choice[];
 }

@@ -2,13 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import appConfig from './config/app.config';
 import { ConfigType } from '@nestjs/config';
-import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
-  app.useGlobalFilters(new ApolloAllExceptionsFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory(errors) {

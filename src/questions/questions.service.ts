@@ -2,9 +2,8 @@ import { SurveysService } from './../surveys/surveys.service';
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Question } from './entities/question.entity';
-import { Survey } from 'src/surveys/entities/survey.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -15,13 +14,17 @@ export class QuestionsService {
   ) {}
   async create(createQuestionInput: CreateQuestionInput): Promise<Question> {
     const { content, questionNumber, parentsSurveyId } = createQuestionInput;
-    const findOneSurvey = await this.surveysService.findOne(parentsSurveyId);
-    await this.checkQuestionNumber(parentsSurveyId, questionNumber);
+    console.log('asdfasfs', createQuestionInput.questionNumber);
+
+    const findParentsSurvey = await this.surveysService.findOne(
+      parentsSurveyId,
+    );
+    await this.checkQuestion(createQuestionInput);
 
     const createQuestion = this.questionRepository.create({
       content,
       questionNumber,
-      parentsSurvey: findOneSurvey,
+      parentsSurvey: findParentsSurvey,
       parentsSurveyId,
     });
     const saveQuestion = await this.questionRepository.save(createQuestion);
@@ -42,10 +45,12 @@ export class QuestionsService {
   ): Promise<Question> {
     const findQuestion = await this.findOne(id);
 
-    await this.checkQuestionNumber(
-      findQuestion.parentsSurveyId,
-      updateQuestionInput.questionNumber,
-    );
+    const checkInfo: CreateQuestionInput = {
+      parentsSurveyId: findQuestion.parentsSurveyId,
+      questionNumber: updateQuestionInput.questionNumber,
+      content: updateQuestionInput.content,
+    };
+    await this.checkQuestion(checkInfo, id);
 
     await this.questionRepository.update(id, updateQuestionInput);
     const updateQuestionResult = await this.findOne(id);
@@ -54,23 +59,49 @@ export class QuestionsService {
 
   async remove(id: number): Promise<boolean> {
     const question = await this.findOne(id);
-    await this.questionRepository.remove(question);
+    const removeResult = await this.questionRepository.remove(question);
+    if (removeResult.id) {
+      return false;
+    }
     return true;
   }
 
-  async checkQuestionNumber(
-    parentsSurveyId: number,
-    questionNumber: number,
+  private async checkQuestion(
+    checkInfo: CreateQuestionInput,
+    excludeId?: number,
   ): Promise<Question> {
-    const checkQuestionNumber = await this.questionRepository.findOne({
-      where: { parentsSurveyId, questionNumber },
-    });
+    const { parentsSurveyId, questionNumber, content } = checkInfo;
 
-    if (checkQuestionNumber) {
-      throw new Error(
-        '설문지에 같은 번호의 문제가 이미 존재합니다. 번호를 변경하세요',
+    const queryBuilder = this.questionRepository
+      .createQueryBuilder('question')
+      .where('question.parentsSurveyId=:parentsSurveyId', { parentsSurveyId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('question.questionNumber=:questionNumber', {
+            questionNumber,
+          }).orWhere('question.content=:content', {
+            content,
+          });
+        }),
       );
+    if (excludeId) {
+      queryBuilder.andWhere('choice.id !=:excludeId', { excludeId });
     }
-    return checkQuestionNumber;
+    const checkQuestion = await queryBuilder.getOne();
+    if (checkQuestion) {
+      if (checkQuestion.questionNumber === questionNumber) {
+        throw new Error(
+          '설문지에 같은 번호의 문제가 이미 존재합니다. 번호를 변경하세요',
+        );
+      } else if (checkQuestion.content === content) {
+        throw new Error(
+          '설문지에 같은 내용의 문제가 이미 존재합니다. 내용를 변경하세요',
+        );
+      }
+    }
+
+    return checkQuestion;
   }
+
+  //설문지에 포함된 문제들 전체보기
 }

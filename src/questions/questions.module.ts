@@ -8,5 +8,6 @@ import { SurveysModule } from 'src/surveys/surveys.module';
 @Module({
   imports: [databaseModule, SurveysModule],
   providers: [QuestionsResolver, QuestionsService, ...QuestionRepository],
+  exports: [QuestionsService],
 })
 export class QuestionsModule {}

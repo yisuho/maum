@@ -10,9 +10,9 @@ import { ConfigModule } from '@nestjs/config';
 import postgresqlConfig from './config/postgresql.config';
 import appConfig from './config/app.config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
-import { ApolloAllExceptionsFilter } from './http-exception/http-exception.filter';
 import { LoggingPlugin } from './logger/logger.service';
 import { QuestionsModule } from './questions/questions.module';
+import { ChoicesModule } from './choices/choices.module';
 
 @Module({
   imports: [
@@ -43,6 +43,7 @@ import { QuestionsModule } from './questions/questions.module';
     databaseModule,
     SurveysModule,
     QuestionsModule,
+    ChoicesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -50,10 +51,6 @@ import { QuestionsModule } from './questions/questions.module';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: ApolloAllExceptionsFilter,
     },
   ],
 })
