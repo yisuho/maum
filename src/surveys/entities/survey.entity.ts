@@ -23,7 +23,7 @@ export class Survey {
 
   @Field(() => [Question])
   @OneToMany(() => Question, (question) => question.parentsSurvey, {
-    eager: true,
+    lazy: true,
   })
   question: Question[];
 }

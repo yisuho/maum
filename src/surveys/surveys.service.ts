@@ -23,7 +23,13 @@ export class SurveysService {
   }
 
   async findOne(id: number): Promise<Survey> {
-    const findOne = await this.surveyRepository.findOne({ where: { id } });
+    const findOne = await this.surveyRepository
+      .createQueryBuilder('survey')
+      .leftJoinAndSelect('survey.question', 'question')
+      .where('survey.id = :id', { id })
+      .orderBy('question.questionNumber', 'ASC')
+      .getOne();
+
     if (!findOne) {
       throw new ApolloError('해당 설문지가 없습니다');
     }
