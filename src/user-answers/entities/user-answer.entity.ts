@@ -8,6 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Choice } from 'src/choices/entities/choice.entity';
 
 @ObjectType()
 @Entity()
@@ -46,4 +47,63 @@ export class UserAnswer {
   @Field(() => Int, { nullable: false, description: 'point' })
   @Column({ name: 'point' })
   point: number;
+}
+
+@ObjectType()
+export class CompleteUserSurvey {
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  id: number;
+
+  @Field(() => String, {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  title: string;
+
+  @Field(() => String, {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  description: string;
+
+  @Field(() => String, {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  footer: string;
+
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  totalScore: number;
+
+  @Field(() => [CompletAnswer], {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  question: CompletAnswer[];
+}
+
+@ObjectType()
+export class CompletAnswer {
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  id: number;
+
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  questionNumber: number;
+
+  @Field(() => String, {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  content: string;
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  selectChoiceId: number;
+
+  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  point: number;
+
+  @Field(() => [Choice], {
+    nullable: false,
+    description: 'Complete User Survey ID',
+  })
+  choice: Choice[];
 }

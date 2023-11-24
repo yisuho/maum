@@ -2,10 +2,13 @@ import { QuestionsService } from './../questions/questions.service';
 import { UserSurveysService } from './../user-surveys/user-surveys.service';
 import { SurveysService } from './../surveys/surveys.service';
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateUserAnswerInput } from './dto/create-user-answer.input';
 import { UpdateUserAnswerInput } from './dto/update-user-answer.input';
 import { Repository } from 'typeorm';
-import { UserAnswer } from './entities/user-answer.entity';
+import {
+  CompletAnswer,
+  CompleteUserSurvey,
+  UserAnswer,
+} from './entities/user-answer.entity';
 import { CreateAnswerInfo } from './model/user-answer.model';
 import { Survey } from 'src/surveys/entities/survey.entity';
 
@@ -47,32 +50,34 @@ export class UserAnswersService {
   async completeUserSurvey(
     createUserAnswer: UserAnswer[],
     originalSurvey: Survey,
-  ): Promise<any> {
+  ): Promise<CompleteUserSurvey> {
     const surveyQuestion = originalSurvey.question;
     let totalScore = 0;
 
-    const completAnswer = surveyQuestion.flatMap((question) => {
-      return createUserAnswer
-        .filter((answer) => question.id === answer.questionId)
-        .map((answer) => {
-          totalScore += answer.point;
-          return {
-            id: question.id,
-            questionNumber: question.questionNumber,
-            content: question.content,
-            selectChoiceId: answer.selectChoiceNumberId,
-            point: answer.point,
-            choice: question.choice,
-          };
-        });
-    });
-    const completeUserSurvey = {
+    const completAnswers: CompletAnswer[] = surveyQuestion.flatMap(
+      (question) => {
+        return createUserAnswer
+          .filter((answer) => question.id === answer.questionId)
+          .map((answer) => {
+            totalScore += answer.point;
+            return {
+              id: question.id,
+              questionNumber: question.questionNumber,
+              content: question.content,
+              selectChoiceId: answer.selectChoiceNumberId,
+              point: answer.point,
+              choice: question.choice,
+            };
+          });
+      },
+    );
+    const completeUserSurvey: CompleteUserSurvey = {
       id: originalSurvey.id,
       title: originalSurvey.title,
       description: originalSurvey.description,
       footer: originalSurvey.footer,
       totalScore,
-      question: completAnswer,
+      question: completAnswers,
     };
     return completeUserSurvey;
   }

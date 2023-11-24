@@ -41,6 +41,46 @@ type UserAnswer {
   point: Int!
 }
 
+type CompleteUserSurvey {
+  """Complete User Survey ID"""
+  id: Int!
+
+  """Complete User Survey ID"""
+  title: String!
+
+  """Complete User Survey ID"""
+  description: String!
+
+  """Complete User Survey ID"""
+  footer: String!
+
+  """Complete User Survey ID"""
+  totalScore: Int!
+
+  """Complete User Survey ID"""
+  question: [CompletAnswer!]!
+}
+
+type CompletAnswer {
+  """Complete User Survey ID"""
+  id: Int!
+
+  """Complete User Survey ID"""
+  questionNumber: Int!
+
+  """Complete User Survey ID"""
+  content: String!
+
+  """Complete User Survey ID"""
+  selectChoiceId: Int!
+
+  """Complete User Survey ID"""
+  point: Int!
+
+  """Complete User Survey ID"""
+  choice: [Choice!]!
+}
+
 type UserSurvey {
   """Uers Survey ID"""
   id: Int!
@@ -84,7 +124,7 @@ type Mutation {
   createChoice(createChoiceInput: CreateChoiceInput!): Choice!
   updateChoice(updateChoiceInput: UpdateChoiceInput!): Choice!
   removeChoice(id: Int!): Boolean!
-  createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): [UserSurvey!]!
+  createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): CompleteUserSurvey!
   updateUserAnswer(updateUserAnswerInput: UpdateUserAnswerInput!): UserAnswer!
   removeUserAnswer(id: Int!): UserAnswer!
 }

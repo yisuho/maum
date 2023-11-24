@@ -1,7 +1,7 @@
 import { UserSurveysService } from './../user-surveys/user-surveys.service';
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UserAnswersService } from './user-answers.service';
-import { UserAnswer } from './entities/user-answer.entity';
+import { CompleteUserSurvey, UserAnswer } from './entities/user-answer.entity';
 import { CreateUserAnswerInput } from './dto/create-user-answer.input';
 import { UpdateUserAnswerInput } from './dto/update-user-answer.input';
 import { SurveysService } from 'src/surveys/surveys.service';
@@ -16,10 +16,10 @@ export class UserAnswersResolver {
     private readonly surveysService: SurveysService,
   ) {}
 
-  @Mutation(() => [UserSurvey])
+  @Mutation(() => CompleteUserSurvey)
   async createUserAnswer(
     @Args('createUserAnswerInput') createUserAnswerInput: CreateUserAnswerInput,
-  ): Promise<UserAnswer[]> {
+  ): Promise<CompleteUserSurvey> {
     const originalSurvey = await this.surveysService.findOne(
       createUserAnswerInput.OriginalSurveyId,
     );
@@ -37,10 +37,8 @@ export class UserAnswersResolver {
       crateUserAnswer,
       originalSurvey,
     );
-    // const completSurvey = await this.userSurveysService.findOne(
-    //   crateUserAnswer.id,
-    // );
-    return crateUserAnswer;
+
+    return completeUserSurvey;
   }
 
   @Query(() => [UserAnswer], { name: 'userAnswers' })
