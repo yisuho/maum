@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateSurveyInput } from './dto/create-survey.input';
 import { UpdateSurveyInput } from './dto/update-survey.input';
-import { DeleteResult, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Survey } from './entities/survey.entity';
-import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class SurveysService {
@@ -25,13 +24,17 @@ export class SurveysService {
   async findOne(id: number): Promise<Survey> {
     const findOne = await this.surveyRepository
       .createQueryBuilder('survey')
-      .leftJoinAndSelect('survey.question', 'question')
+      .innerJoinAndSelect('survey.question', 'question')
+      .leftJoinAndSelect('question.choice', 'choice')
       .where('survey.id = :id', { id })
-      .orderBy('question.questionNumber', 'ASC')
+      .orderBy({
+        'question.questionNumber': 'ASC',
+        'choice.choiceNumber': 'ASC',
+      })
       .getOne();
 
     if (!findOne) {
-      throw new ApolloError('해당 설문지가 없습니다');
+      throw new Error('해당 설문지가 없습니다');
     }
     return findOne;
   }

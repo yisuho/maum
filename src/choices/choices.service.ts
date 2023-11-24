@@ -4,6 +4,7 @@ import { CreateChoiceInput } from './dto/create-choice.input';
 import { UpdateChoiceInput } from './dto/update-choice.input';
 import { Brackets, Repository } from 'typeorm';
 import { Choice } from './entities/choice.entity';
+import { CreateChoiceInfo } from './model/choices.model';
 
 @Injectable()
 export class ChoicesService {
@@ -12,6 +13,7 @@ export class ChoicesService {
     private choiceRepository: Repository<Choice>,
     private questionsService: QuestionsService,
   ) {}
+
   async create(createChoiceInput: CreateChoiceInput): Promise<Choice> {
     const { parentsQuestionId, choiceNumber, content, point } =
       createChoiceInput;
@@ -21,24 +23,27 @@ export class ChoicesService {
     const findparentsQuestion = await this.questionsService.findOne(
       parentsQuestionId,
     );
-    const createChoice = this.choiceRepository.create({
+
+    const createChoiceInfo: CreateChoiceInfo = {
       parentsQuestion: findparentsQuestion,
-      parentsQuestionId,
       choiceNumber,
       content,
       point,
-    });
+    };
 
+    const createChoice = this.choiceRepository.create(createChoiceInfo);
     const saveChoice = await this.choiceRepository.save(createChoice);
     return saveChoice;
   }
 
-  // findAll() {
-  //   return `This action returns all choices`;
-  // }
-
   async findOne(id: number): Promise<Choice> {
-    const findOne = await this.choiceRepository.findOne({ where: { id } });
+    // const findOne = await this.choiceRepository.findOne({ where: { id } });
+    const findOne = await this.choiceRepository
+      .createQueryBuilder('choice')
+      .leftJoinAndSelect('choice.parentsQuestion', 'question.id')
+      .where('choice.id=:id', { id })
+      .getOne();
+
     if (!findOne) {
       throw new Error('해당 보기가 없습니다.');
     }
@@ -50,12 +55,14 @@ export class ChoicesService {
     updateChoiceInput: UpdateChoiceInput,
   ): Promise<Choice> {
     const findChoice = await this.findOne(id);
+
     const checkInfo: CreateChoiceInput = {
-      parentsQuestionId: findChoice.parentsQuestionId,
+      parentsQuestionId: findChoice.parentsQuestion.id,
       choiceNumber: updateChoiceInput.choiceNumber,
       content: updateChoiceInput.content,
       point: updateChoiceInput.point,
     };
+
     await this.checkChoice(checkInfo, id);
 
     await this.choiceRepository.update(id, updateChoiceInput);
@@ -79,7 +86,7 @@ export class ChoicesService {
     const { parentsQuestionId, choiceNumber, content, point } = checkInfo;
     const queryBuilder = this.choiceRepository
       .createQueryBuilder('choice')
-      .where('choice.parentsQuestionId = :parentsQuestionId', {
+      .where('choice.parentsQuestion = :parentsQuestionId', {
         parentsQuestionId,
       })
       .andWhere(

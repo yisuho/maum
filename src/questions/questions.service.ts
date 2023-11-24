@@ -4,6 +4,7 @@ import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
 import { Brackets, Repository } from 'typeorm';
 import { Question } from './entities/question.entity';
+import { CreateQuestionInfo } from './model/question.model';
 
 @Injectable()
 export class QuestionsService {
@@ -13,26 +14,38 @@ export class QuestionsService {
     private surveysService: SurveysService,
   ) {}
   async create(createQuestionInput: CreateQuestionInput): Promise<Question> {
-    const { content, questionNumber, parentsSurveyId } = createQuestionInput;
-    console.log('asdfasfs', createQuestionInput.questionNumber);
+    const { parentsSurveyId } = createQuestionInput;
 
     const findParentsSurvey = await this.surveysService.findOne(
       parentsSurveyId,
     );
+
     await this.checkQuestion(createQuestionInput);
 
-    const createQuestion = this.questionRepository.create({
-      content,
-      questionNumber,
+    const createQuestionInfo: CreateQuestionInfo = {
       parentsSurvey: findParentsSurvey,
-      parentsSurveyId,
-    });
+      questionNumber: createQuestionInput.questionNumber,
+      content: createQuestionInput.content,
+    };
+
+    const createQuestion = this.questionRepository.create(createQuestionInfo);
     const saveQuestion = await this.questionRepository.save(createQuestion);
     return saveQuestion;
   }
 
   async findOne(id: number): Promise<Question> {
-    const findOne = await this.questionRepository.findOne({ where: { id } });
+    // const findOne = await this.questionRepository.findOne({ where: { id } });
+
+    const findOne = await this.questionRepository
+      .createQueryBuilder('question')
+      .leftJoinAndSelect('question.parentsSurvey', 'survey.id')
+      .leftJoinAndSelect('question.choice', 'choice')
+      .where('question.id = :id', { id })
+      .orderBy('choice.choiceNumber', 'ASC')
+      .getOne();
+
+    console.log(typeof findOne.parentsSurvey.id);
+
     if (!findOne) {
       throw new Error('해당 문제가 없습니다.');
     }
@@ -46,7 +59,7 @@ export class QuestionsService {
     const findQuestion = await this.findOne(id);
 
     const checkInfo: CreateQuestionInput = {
-      parentsSurveyId: findQuestion.parentsSurveyId,
+      parentsSurveyId: findQuestion.parentsSurvey.id,
       questionNumber: updateQuestionInput.questionNumber,
       content: updateQuestionInput.content,
     };
@@ -71,10 +84,9 @@ export class QuestionsService {
     excludeId?: number,
   ): Promise<Question> {
     const { parentsSurveyId, questionNumber, content } = checkInfo;
-
     const queryBuilder = this.questionRepository
       .createQueryBuilder('question')
-      .where('question.parentsSurveyId=:parentsSurveyId', { parentsSurveyId })
+      .where('question.parentsSurvey = :parentsSurveyId', { parentsSurveyId })
       .andWhere(
         new Brackets((qb) => {
           qb.where('question.questionNumber=:questionNumber', {
@@ -85,9 +97,10 @@ export class QuestionsService {
         }),
       );
     if (excludeId) {
-      queryBuilder.andWhere('choice.id !=:excludeId', { excludeId });
+      queryBuilder.andWhere('question.id !=:excludeId', { excludeId });
     }
     const checkQuestion = await queryBuilder.getOne();
+
     if (checkQuestion) {
       if (checkQuestion.questionNumber === questionNumber) {
         throw new Error(

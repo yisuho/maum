@@ -9,10 +9,11 @@ import { databaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import postgresqlConfig from './config/postgresql.config';
 import appConfig from './config/app.config';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
-import { LoggingPlugin } from './logger/logger.service';
+import { APP_PIPE } from '@nestjs/core';
 import { QuestionsModule } from './questions/questions.module';
 import { ChoicesModule } from './choices/choices.module';
+import { UserAnswersModule } from './user-answers/user-answers.module';
+import { UserSurveysModule } from './user-surveys/user-surveys.module';
 
 @Module({
   imports: [
@@ -26,9 +27,7 @@ import { ChoicesModule } from './choices/choices.module';
       driver: ApolloDriver,
       playground: true,
       autoSchemaFile: join(process.cwd(), 'src/schema.graphql'),
-      // plugins: [new LoggingPlugin()],
       formatError: (error) => {
-        // 여기에서 에러를 커스텀 포맷으로 변환
         const res = {
           message: error.message,
           code: error.extensions.code,
@@ -44,6 +43,8 @@ import { ChoicesModule } from './choices/choices.module';
     SurveysModule,
     QuestionsModule,
     ChoicesModule,
+    UserAnswersModule,
+    UserSurveysModule,
   ],
   controllers: [AppController],
   providers: [

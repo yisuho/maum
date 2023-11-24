@@ -26,11 +26,7 @@ export class Choice {
   parentsQuestion: Question;
 
   @Field(() => Int, { nullable: false })
-  @Column({ name: 'parents_question_id' })
-  parentsQuestionId: number;
-
-  @Field(() => Int, { nullable: false })
-  @Column({ name: 'choice_No' })
+  @Column({ name: 'choice_no' })
   choiceNumber: number;
 
   @Field(() => String, { nullable: false })

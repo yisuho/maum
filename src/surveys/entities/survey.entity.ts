@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Question } from 'src/questions/entities/question.entity';
+import { UserSurvey } from 'src/user-surveys/entities/user-survey.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
@@ -23,7 +24,10 @@ export class Survey {
 
   @Field(() => [Question])
   @OneToMany(() => Question, (question) => question.parentsSurvey, {
-    lazy: true,
+    eager: true,
   })
   question: Question[];
+
+  @OneToMany(() => UserSurvey, (userSurvey) => userSurvey.originalSurvey)
+  userSurvey: UserSurvey[];
 }

@@ -1,6 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Choice } from 'src/choices/entities/choice.entity';
 import { Survey } from 'src/surveys/entities/survey.entity';
+import { UserAnswer } from 'src/user-answers/entities/user-answer.entity';
 import {
   Column,
   Entity,
@@ -26,11 +27,7 @@ export class Question {
   parentsSurvey: Survey;
 
   @Field(() => Int, { nullable: false })
-  @Column({ name: 'parents_survey_id' })
-  parentsSurveyId: number;
-
-  @Field(() => Int, { nullable: false })
-  @Column({ name: 'question_No' })
+  @Column({ name: 'question_no' })
   questionNumber: number;
 
   @Field(() => String, { nullable: false })
@@ -38,6 +35,9 @@ export class Question {
   content: string;
 
   @Field(() => [Choice])
-  @OneToMany(() => Choice, (choice) => choice.parentsQuestion, { lazy: true })
+  @OneToMany(() => Choice, (choice) => choice.parentsQuestion, { eager: true })
   choice: Choice[];
+
+  // @OneToMany(() => UserAnswer, (userAnswer) => userAnswer.question)
+  // userAnswer: UserAnswer[];
 }

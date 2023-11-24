@@ -8,7 +8,6 @@ type Choice {
 
   """Parents Question """
   parentsQuestion: Question!
-  parentsQuestionId: Int!
   choiceNumber: Int!
   content: String!
   point: Int!
@@ -20,10 +19,35 @@ type Question {
 
   """Parents Survey """
   parentsSurvey: Survey!
-  parentsSurveyId: Int!
   questionNumber: Int!
   content: String!
   choice: [Choice!]!
+}
+
+type UserAnswer {
+  """User Answer ID"""
+  id: Int!
+
+  """Parents UserSurvey """
+  parentsUserSurvey: UserSurvey!
+
+  """Question ID"""
+  questionId: Int!
+
+  """selectChoiceNumberId"""
+  selectChoiceNumberId: Int!
+
+  """point"""
+  point: Int!
+}
+
+type UserSurvey {
+  """Uers Survey ID"""
+  id: Int!
+
+  """Parents Survey """
+  originalSurvey: Survey!
+  userAnswer: [UserAnswer!]!
 }
 
 type Survey {
@@ -46,6 +70,8 @@ type Query {
   survey(id: Int!): Survey!
   question(id: Int!): Question!
   choice(id: Int!): Choice!
+  userAnswers: [UserAnswer!]!
+  userAnswer(id: Int!): UserAnswer!
 }
 
 type Mutation {
@@ -58,6 +84,9 @@ type Mutation {
   createChoice(createChoiceInput: CreateChoiceInput!): Choice!
   updateChoice(updateChoiceInput: UpdateChoiceInput!): Choice!
   removeChoice(id: Int!): Boolean!
+  createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): [UserSurvey!]!
+  updateUserAnswer(updateUserAnswerInput: UpdateUserAnswerInput!): UserAnswer!
+  removeUserAnswer(id: Int!): UserAnswer!
 }
 
 input CreateSurveyInput {
@@ -131,4 +160,28 @@ input UpdateChoiceInput {
 
   """Choice Point"""
   point: Int
+}
+
+input CreateUserAnswerInput {
+  """Example field (placeholder)"""
+  OriginalSurveyId: Int!
+  userAnswer: [Answer!]!
+}
+
+input Answer {
+  """Question No."""
+  questionId: Int!
+
+  """Choice No."""
+  selectChoiceId: Int!
+
+  """Point"""
+  point: Int!
+}
+
+input UpdateUserAnswerInput {
+  """Example field (placeholder)"""
+  OriginalSurveyId: Int
+  userAnswer: [Answer!]
+  id: Int!
 }
