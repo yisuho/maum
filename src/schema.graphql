@@ -34,16 +34,19 @@ type UserAnswer {
   """Question ID"""
   questionId: Int!
 
-  """selectChoiceNumberId"""
-  selectChoiceNumberId: Int!
+  """Select Choice Number Id"""
+  selectChoiceId: Int!
 
   """point"""
   point: Int!
 }
 
 type CompleteUserSurvey {
-  """Complete User Survey ID"""
+  """User Survey Id"""
   id: Int!
+
+  """Original Survey Id"""
+  originalSurveyId: Int!
 
   """Complete User Survey ID"""
   title: String!
@@ -110,8 +113,8 @@ type Query {
   survey(id: Int!): Survey!
   question(id: Int!): Question!
   choice(id: Int!): Choice!
-  userAnswers: [UserAnswer!]!
   userAnswer(id: Int!): UserAnswer!
+  userSurvey(id: Int!): CompleteUserSurvey!
 }
 
 type Mutation {
@@ -126,7 +129,7 @@ type Mutation {
   removeChoice(id: Int!): Boolean!
   createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): CompleteUserSurvey!
   updateUserAnswer(updateUserAnswerInput: UpdateUserAnswerInput!): UserAnswer!
-  removeUserAnswer(id: Int!): UserAnswer!
+  removeUserAnswer(id: Int!): Boolean!
 }
 
 input CreateSurveyInput {
@@ -214,14 +217,15 @@ input Answer {
 
   """Choice No."""
   selectChoiceId: Int!
-
-  """Point"""
-  point: Int!
 }
 
 input UpdateUserAnswerInput {
-  """Example field (placeholder)"""
-  OriginalSurveyId: Int
-  userAnswer: [Answer!]
+  """User Answer ID"""
   id: Int!
+
+  """Question ID"""
+  questionId: Int
+
+  """User Select Choice ID"""
+  selectChoiceId: Int
 }

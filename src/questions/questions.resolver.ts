@@ -3,44 +3,60 @@ import { QuestionsService } from './questions.service';
 import { Question } from './entities/question.entity';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
+import { DataSource } from 'typeorm';
+import { Inject } from '@nestjs/common';
 
 @Resolver(() => Question)
 export class QuestionsResolver {
-  constructor(private readonly questionsService: QuestionsService) {}
+  constructor(
+    @Inject('DATA_SOURCE')
+    private dataSource: DataSource,
+    private readonly questionsService: QuestionsService,
+  ) {}
 
   @Mutation(() => Question)
   async createQuestion(
     @Args('createQuestionInput') createQuestionInput: CreateQuestionInput,
   ): Promise<Question> {
-    const createQuestion = await this.questionsService.create(
-      createQuestionInput,
-    );
-    return createQuestion;
+    return await this.dataSource.transaction(async (manager) => {
+      const createQuestion = await this.questionsService.create(
+        createQuestionInput,
+        manager,
+      );
+      return createQuestion;
+    });
   }
 
   @Query(() => Question, { name: 'question' })
   async findOne(
     @Args('id', { type: () => Int }) id: number,
   ): Promise<Question> {
-    const findOne = await this.questionsService.findOne(id);
-    return findOne;
+    return await this.dataSource.transaction(async (manager) => {
+      const findOne = await this.questionsService.findOne(id, manager);
+      return findOne;
+    });
   }
 
   @Mutation(() => Question)
   async updateQuestion(
     @Args('updateQuestionInput') updateQuestionInput: UpdateQuestionInput,
   ): Promise<Question> {
-    const updateQuestion = await this.questionsService.update(
-      updateQuestionInput.id,
-      updateQuestionInput,
-    );
-    return updateQuestion;
+    return await this.dataSource.transaction(async (manager) => {
+      const updateQuestion = await this.questionsService.update(
+        updateQuestionInput.id,
+        updateQuestionInput,
+        manager,
+      );
+      return updateQuestion;
+    });
   }
 
   @Mutation(() => Boolean)
   async removeQuestion(
     @Args('id', { type: () => Int }) id: number,
   ): Promise<boolean> {
-    return this.questionsService.remove(id);
+    return await this.dataSource.transaction(async (manager) => {
+      return this.questionsService.remove(id, manager);
+    });
   }
 }

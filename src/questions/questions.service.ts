@@ -1,26 +1,26 @@
 import { SurveysService } from './../surveys/surveys.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { UpdateQuestionInput } from './dto/update-question.input';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, EntityManager } from 'typeorm';
 import { Question } from './entities/question.entity';
 import { CreateQuestionInfo } from './model/question.model';
 
 @Injectable()
 export class QuestionsService {
-  constructor(
-    @Inject('QUESTION_REPOSITORY')
-    private questionRepository: Repository<Question>,
-    private surveysService: SurveysService,
-  ) {}
-  async create(createQuestionInput: CreateQuestionInput): Promise<Question> {
+  constructor(private surveysService: SurveysService) {}
+  async create(
+    createQuestionInput: CreateQuestionInput,
+    manager: EntityManager,
+  ): Promise<Question> {
     const { parentsSurveyId } = createQuestionInput;
 
     const findParentsSurvey = await this.surveysService.findOne(
       parentsSurveyId,
+      manager,
     );
 
-    await this.checkQuestion(createQuestionInput);
+    await this.checkQuestion(createQuestionInput, manager);
 
     const createQuestionInfo: CreateQuestionInfo = {
       parentsSurvey: findParentsSurvey,
@@ -28,26 +28,22 @@ export class QuestionsService {
       content: createQuestionInput.content,
     };
 
-    const createQuestion = this.questionRepository.create(createQuestionInfo);
-    const saveQuestion = await this.questionRepository.save(createQuestion);
+    const createQuestion = manager.create(Question, createQuestionInfo);
+    const saveQuestion = await manager.save(Question, createQuestion);
     return saveQuestion;
   }
 
-  async findOne(id: number): Promise<Question> {
-    // const findOne = await this.questionRepository.findOne({ where: { id } });
-
-    const findOne = await this.questionRepository
-      .createQueryBuilder('question')
+  async findOne(id: number, manager: EntityManager): Promise<Question> {
+    const findOne = await manager
+      .createQueryBuilder(Question, 'question')
       .leftJoinAndSelect('question.parentsSurvey', 'survey.id')
       .leftJoinAndSelect('question.choice', 'choice')
       .where('question.id = :id', { id })
       .orderBy('choice.choiceNumber', 'ASC')
       .getOne();
 
-    console.log(typeof findOne.parentsSurvey.id);
-
     if (!findOne) {
-      throw new Error('해당 문제가 없습니다.');
+      throw new Error(`해당 ID:${id} 를 가진 문제가 없습니다.`);
     }
     return findOne;
   }
@@ -55,24 +51,25 @@ export class QuestionsService {
   async update(
     id: number,
     updateQuestionInput: UpdateQuestionInput,
+    manager: EntityManager,
   ): Promise<Question> {
-    const findQuestion = await this.findOne(id);
+    const findQuestion = await this.findOne(id, manager);
 
     const checkInfo: CreateQuestionInput = {
       parentsSurveyId: findQuestion.parentsSurvey.id,
       questionNumber: updateQuestionInput.questionNumber,
       content: updateQuestionInput.content,
     };
-    await this.checkQuestion(checkInfo, id);
+    await this.checkQuestion(checkInfo, manager, id);
 
-    await this.questionRepository.update(id, updateQuestionInput);
-    const updateQuestionResult = await this.findOne(id);
+    await manager.update(Question, id, updateQuestionInput);
+    const updateQuestionResult = await this.findOne(id, manager);
     return updateQuestionResult;
   }
 
-  async remove(id: number): Promise<boolean> {
-    const question = await this.findOne(id);
-    const removeResult = await this.questionRepository.remove(question);
+  async remove(id: number, manager: EntityManager): Promise<boolean> {
+    const question = await this.findOne(id, manager);
+    const removeResult = await manager.remove(Question, question);
     if (removeResult.id) {
       return false;
     }
@@ -81,11 +78,12 @@ export class QuestionsService {
 
   private async checkQuestion(
     checkInfo: CreateQuestionInput,
+    manager: EntityManager,
     excludeId?: number,
   ): Promise<Question> {
     const { parentsSurveyId, questionNumber, content } = checkInfo;
-    const queryBuilder = this.questionRepository
-      .createQueryBuilder('question')
+    const queryBuilder = manager
+      .createQueryBuilder(Question, 'question')
       .where('question.parentsSurvey = :parentsSurveyId', { parentsSurveyId })
       .andWhere(
         new Brackets((qb) => {

@@ -16,7 +16,4 @@ export class Answer {
 
   @Field(() => Int, { nullable: false, description: 'Choice No.' })
   selectChoiceId: number;
-
-  @Field(() => Int, { nullable: false, description: 'Point' })
-  point: number;
 }

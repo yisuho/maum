@@ -1,35 +1,29 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Args, Int } from '@nestjs/graphql';
 import { UserSurveysService } from './user-surveys.service';
 import { UserSurvey } from './entities/user-survey.entity';
-import { CreateUserSurveyInput } from './dto/create-user-survey.input';
-import { UpdateUserSurveyInput } from './dto/update-user-survey.input';
+import { CompleteUserSurvey } from 'src/user-answers/entities/user-answer.entity';
+import { Inject } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
 @Resolver(() => UserSurvey)
 export class UserSurveysResolver {
-  constructor(private readonly userSurveysService: UserSurveysService) {}
+  constructor(
+    @Inject('DATA_SOURCE')
+    private dataSource: DataSource,
+    private readonly userSurveysService: UserSurveysService,
+  ) {}
 
-  // @Mutation(() => UserSurvey)
-  // createUserSurvey(@Args('createUserSurveyInput') createUserSurveyInput: CreateUserSurveyInput) {
-  //   return this.userSurveysService.create(createUserSurveyInput);
-  // }
+  @Query(() => CompleteUserSurvey, { name: 'userSurvey' })
+  async findOne(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<CompleteUserSurvey> {
+    return await this.dataSource.transaction(async (manager) => {
+      const findOneUserSurvey = await this.userSurveysService.findOne(
+        id,
+        manager,
+      );
 
-  // @Query(() => [UserSurvey], { name: 'userSurveys' })
-  // findAll() {
-  //   return this.userSurveysService.findAll();
-  // }
-
-  // @Query(() => UserSurvey, { name: 'userSurvey' })
-  // findOne(@Args('id', { type: () => Int }) id: number) {
-  //   return this.userSurveysService.findOne(id);
-  // }
-
-  // @Mutation(() => UserSurvey)
-  // updateUserSurvey(@Args('updateUserSurveyInput') updateUserSurveyInput: UpdateUserSurveyInput) {
-  //   return this.userSurveysService.update(updateUserSurveyInput.id, updateUserSurveyInput);
-  // }
-
-  // @Mutation(() => UserSurvey)
-  // removeUserSurvey(@Args('id', { type: () => Int }) id: number) {
-  //   return this.userSurveysService.remove(id);
-  // }
+      return findOneUserSurvey;
+    });
+  }
 }

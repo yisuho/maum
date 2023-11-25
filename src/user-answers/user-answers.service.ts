@@ -1,100 +1,173 @@
 import { QuestionsService } from './../questions/questions.service';
-import { UserSurveysService } from './../user-surveys/user-surveys.service';
-import { SurveysService } from './../surveys/surveys.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UpdateUserAnswerInput } from './dto/update-user-answer.input';
-import { Repository } from 'typeorm';
-import {
-  CompletAnswer,
-  CompleteUserSurvey,
-  UserAnswer,
-} from './entities/user-answer.entity';
+import { EntityManager } from 'typeorm';
+import { UserAnswer } from './entities/user-answer.entity';
 import { CreateAnswerInfo } from './model/user-answer.model';
 import { Survey } from 'src/surveys/entities/survey.entity';
+import { Answer } from './dto/create-user-answer.input';
+import { UserSurvey } from 'src/user-surveys/entities/user-survey.entity';
 
 @Injectable()
 export class UserAnswersService {
-  constructor(
-    @Inject('USER_ANSWER_REPOSITORY')
-    private userAnswerRepository: Repository<UserAnswer>,
-    private surveysService: SurveysService,
-    private userSurveysService: UserSurveysService,
-    private questionsService: QuestionsService,
-  ) {}
+  constructor(private questionsService: QuestionsService) {}
 
-  async create(createAnswerInfo: CreateAnswerInfo): Promise<UserAnswer[]> {
+  async create(
+    createAnswerInfo: CreateAnswerInfo,
+    manager: EntityManager,
+  ): Promise<UserAnswer[]> {
     const { parentsUserSurvey, userAnswer } = createAnswerInfo;
 
     const createUserAnswer = userAnswer.map(async (answer) => {
-      // const findQuestion = await this.questionsService.findOne(
-      //   answer.questionId,
-      // );
-      const createAnswer = this.userAnswerRepository.create({
+      return await this.createAndSaveUserAnswer(
+        answer,
         parentsUserSurvey,
-        questionId: answer.questionId,
-        selectChoiceNumberId: answer.selectChoiceId,
-        point: answer.point,
-      });
-      const saveAnswer = this.userAnswerRepository.save(createAnswer);
-      return saveAnswer;
+        manager,
+      );
     });
     const savedAnswers = await Promise.all(createUserAnswer);
 
     return savedAnswers;
   }
 
-  async findAll(): Promise<UserAnswer[]> {
+  async createAndSaveUserAnswer(
+    answer: Answer,
+    parentsUserSurvey: UserSurvey,
+    manager: EntityManager,
+  ): Promise<UserAnswer> {
+    const selectChoiceOfPoint = await this.selectChoiceOfPoint(
+      answer.questionId,
+      answer.selectChoiceId,
+      manager,
+    );
+
+    const createAnswer = manager.create(UserAnswer, {
+      parentsUserSurvey,
+      questionId: answer.questionId,
+      selectChoiceId: answer.selectChoiceId,
+      point: selectChoiceOfPoint,
+    });
+    const saveAnswer = manager.save(UserAnswer, createAnswer);
+    return saveAnswer;
+  }
+
+  async findOne(id: number, manager: EntityManager): Promise<UserAnswer> {
+    const findOne = await manager.findOne(UserAnswer, { where: { id } });
+    if (!findOne) {
+      throw new Error('저장된 사용자 답변이 없습니다.');
+    }
+    return findOne;
+  }
+
+  async update(
+    id: number,
+    updateUserAnswerInput: UpdateUserAnswerInput,
+    manager: EntityManager,
+  ): Promise<UserAnswer> {
+    const selectChoiceOfPoint = await this.selectChoiceOfPoint(
+      updateUserAnswerInput.questionId,
+      updateUserAnswerInput.selectChoiceId,
+      manager,
+    );
+
+    const updateUserAnswerInfo = {
+      ...updateUserAnswerInput,
+      point: selectChoiceOfPoint,
+    };
+
+    await manager.update(UserAnswer, id, updateUserAnswerInfo);
+    const completUserAnswerUpdate = await this.findOne(id, manager);
+    return completUserAnswerUpdate;
+  }
+
+  async remove(id: number, manager: EntityManager): Promise<boolean> {
+    const userAnswer = await this.findOne(id, manager);
+    const removeUserAnswer = await manager.remove(UserAnswer, userAnswer);
+
+    if (removeUserAnswer.id) {
+      return false;
+    }
+    return true;
+  }
+
+  userAnswerValidation(originalSurvey: Survey, userAnswer: Answer[]): void {
+    this.checkForDuplicateUserAnswers(userAnswer);
+    this.checkQuestionAnswerCountMatch(originalSurvey, userAnswer);
+    this.checkQuestionAnswerMatch(originalSurvey, userAnswer);
     return;
   }
 
-  async completeUserSurvey(
-    createUserAnswer: UserAnswer[],
+  checkForDuplicateUserAnswers(userAnswer: Answer[]): void {
+    const checkForDuplicateUserAnswersHash = new Map();
+    for (const answer of userAnswer) {
+      if (checkForDuplicateUserAnswersHash.has(answer.questionId)) {
+        throw new Error(`동일한 질문에 중복된 답변이 존재 합니다.`);
+      }
+      checkForDuplicateUserAnswersHash.set(answer.questionId, 1);
+    }
+  }
+
+  checkQuestionAnswerCountMatch(
     originalSurvey: Survey,
-  ): Promise<CompleteUserSurvey> {
+    userAnswer: Answer[],
+  ): void {
     const surveyQuestion = originalSurvey.question;
-    let totalScore = 0;
 
-    const completAnswers: CompletAnswer[] = surveyQuestion.flatMap(
-      (question) => {
-        return createUserAnswer
-          .filter((answer) => question.id === answer.questionId)
-          .map((answer) => {
-            totalScore += answer.point;
-            return {
-              id: question.id,
-              questionNumber: question.questionNumber,
-              content: question.content,
-              selectChoiceId: answer.selectChoiceNumberId,
-              point: answer.point,
-              choice: question.choice,
-            };
-          });
-      },
-    );
-    const completeUserSurvey: CompleteUserSurvey = {
-      id: originalSurvey.id,
-      title: originalSurvey.title,
-      description: originalSurvey.description,
-      footer: originalSurvey.footer,
-      totalScore,
-      question: completAnswers,
-    };
-    return completeUserSurvey;
+    if (surveyQuestion.length !== userAnswer.length) {
+      if (surveyQuestion.length > userAnswer.length) {
+        const userAnswerHash = new Set(
+          userAnswer.map((answer) => {
+            return answer.questionId;
+          }),
+        );
+
+        const emptyAnswersQuestion = surveyQuestion.filter((question) => {
+          return !userAnswerHash.has(question.id);
+        });
+
+        const emptyAnswersQuestionNumber = emptyAnswersQuestion
+          .map((question) => {
+            return question.questionNumber;
+          })
+          .join(',');
+
+        throw new Error(
+          `${emptyAnswersQuestionNumber}번 문제의 답변이 없습니다.`,
+        );
+      } else if (surveyQuestion.length < userAnswer.length) {
+        throw new Error(
+          '문제의 수를 확인해 주세요.문제 보다 많은 수 의 답변이 입력 되었습니다.',
+        );
+      }
+    }
   }
 
-  async findOne(id: number): Promise<UserAnswer> {
-    return await this.userAnswerRepository
-      .createQueryBuilder('userAnswer')
-      .leftJoinAndSelect('userAnswer.questionNumber', 'question.questionNumber')
-      .where('userAnswer.id=:id', { id })
-      .getOne();
+  checkQuestionAnswerMatch(originalSurvey: Survey, userAnswer: Answer[]): void {
+    const originalSurveyQuestionHash = new Map();
+
+    originalSurvey.question.map((question) => {
+      originalSurveyQuestionHash.set(question.id, 1);
+    });
+
+    userAnswer.map((answer) => {
+      if (!originalSurveyQuestionHash.has(answer.questionId)) {
+        throw new Error(
+          `유효하지 않은 질문 ID (${answer.questionId})가 있습니다.`,
+        );
+      }
+    });
   }
 
-  update(id: number, updateUserAnswerInput: UpdateUserAnswerInput) {
-    return `This action updates a #${id} userAnswer`;
-  }
+  async selectChoiceOfPoint(
+    questionId: number,
+    selectChoiceId: number,
+    manager: EntityManager,
+  ): Promise<number> {
+    const question = await this.questionsService.findOne(questionId, manager);
+    const selectChoiceOfPoint = question.choice.find((choice) => {
+      return choice.id === selectChoiceId;
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} userAnswer`;
+    return selectChoiceOfPoint.point;
   }
 }

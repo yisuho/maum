@@ -27,22 +27,13 @@ export class UserAnswer {
   @JoinColumn({ name: 'parents_user_survey' })
   parentsUserSurvey: UserSurvey;
 
-  // @Field(() => Question, {
-  //   nullable: false,
-  //   description: 'Question ID',
-  // })
-  // @ManyToOne(() => Question, (question) => question.userAnswer, {
-  //   onDelete: 'CASCADE',
-  // })
-  // @JoinColumn({ name: 'survey_question' })
-  // question: Question;
   @Field(() => Int, { nullable: false, description: 'Question ID' })
   @Column({ name: 'question_id' })
   questionId: number;
 
-  @Field(() => Int, { nullable: false, description: 'selectChoiceNumberId' })
+  @Field(() => Int, { nullable: false, description: 'Select Choice Number Id' })
   @Column({ name: 'select_choice_number__id' })
-  selectChoiceNumberId: number;
+  selectChoiceId: number;
 
   @Field(() => Int, { nullable: false, description: 'point' })
   @Column({ name: 'point' })
@@ -51,8 +42,11 @@ export class UserAnswer {
 
 @ObjectType()
 export class CompleteUserSurvey {
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  @Field(() => Int, { nullable: false, description: 'User Survey Id' })
   id: number;
+
+  @Field(() => Int, { nullable: false, description: 'Original Survey Id' })
+  originalSurveyId: number;
 
   @Field(() => String, {
     nullable: false,

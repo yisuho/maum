@@ -1,27 +1,27 @@
 import { QuestionsService } from './../questions/questions.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateChoiceInput } from './dto/create-choice.input';
 import { UpdateChoiceInput } from './dto/update-choice.input';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, EntityManager } from 'typeorm';
 import { Choice } from './entities/choice.entity';
 import { CreateChoiceInfo } from './model/choices.model';
 
 @Injectable()
 export class ChoicesService {
-  constructor(
-    @Inject('CHOICE_REPOSITORY')
-    private choiceRepository: Repository<Choice>,
-    private questionsService: QuestionsService,
-  ) {}
+  constructor(private questionsService: QuestionsService) {}
 
-  async create(createChoiceInput: CreateChoiceInput): Promise<Choice> {
+  async create(
+    createChoiceInput: CreateChoiceInput,
+    manager: EntityManager,
+  ): Promise<Choice> {
     const { parentsQuestionId, choiceNumber, content, point } =
       createChoiceInput;
 
-    await this.checkChoice(createChoiceInput);
+    await this.checkChoice(createChoiceInput, manager);
 
     const findparentsQuestion = await this.questionsService.findOne(
       parentsQuestionId,
+      manager,
     );
 
     const createChoiceInfo: CreateChoiceInfo = {
@@ -31,15 +31,14 @@ export class ChoicesService {
       point,
     };
 
-    const createChoice = this.choiceRepository.create(createChoiceInfo);
-    const saveChoice = await this.choiceRepository.save(createChoice);
+    const createChoice = manager.create(Choice, createChoiceInfo);
+    const saveChoice = await manager.save(Choice, createChoice);
     return saveChoice;
   }
 
-  async findOne(id: number): Promise<Choice> {
-    // const findOne = await this.choiceRepository.findOne({ where: { id } });
-    const findOne = await this.choiceRepository
-      .createQueryBuilder('choice')
+  async findOne(id: number, manager: EntityManager): Promise<Choice> {
+    const findOne = await manager
+      .createQueryBuilder(Choice, 'choice')
       .leftJoinAndSelect('choice.parentsQuestion', 'question.id')
       .where('choice.id=:id', { id })
       .getOne();
@@ -53,8 +52,9 @@ export class ChoicesService {
   async update(
     id: number,
     updateChoiceInput: UpdateChoiceInput,
+    manager: EntityManager,
   ): Promise<Choice> {
-    const findChoice = await this.findOne(id);
+    const findChoice = await this.findOne(id, manager);
 
     const checkInfo: CreateChoiceInput = {
       parentsQuestionId: findChoice.parentsQuestion.id,
@@ -63,16 +63,16 @@ export class ChoicesService {
       point: updateChoiceInput.point,
     };
 
-    await this.checkChoice(checkInfo, id);
+    await this.checkChoice(checkInfo, manager, id);
 
-    await this.choiceRepository.update(id, updateChoiceInput);
-    const updateChoiceResult = await this.findOne(id);
+    await manager.update(Choice, id, updateChoiceInput);
+    const updateChoiceResult = await this.findOne(id, manager);
     return updateChoiceResult;
   }
 
-  async remove(id: number): Promise<boolean> {
-    const choice = await this.findOne(id);
-    const removeChoice = await this.choiceRepository.remove(choice);
+  async remove(id: number, manager: EntityManager): Promise<boolean> {
+    const choice = await this.findOne(id, manager);
+    const removeChoice = await manager.remove(Choice, choice);
     if (removeChoice.id) {
       return false;
     }
@@ -81,11 +81,12 @@ export class ChoicesService {
 
   async checkChoice(
     checkInfo: CreateChoiceInput,
+    manager: EntityManager,
     excludeId?: number,
   ): Promise<Choice> {
     const { parentsQuestionId, choiceNumber, content, point } = checkInfo;
-    const queryBuilder = this.choiceRepository
-      .createQueryBuilder('choice')
+    const queryBuilder = manager
+      .createQueryBuilder(Choice, 'choice')
       .where('choice.parentsQuestion = :parentsQuestionId', {
         parentsQuestionId,
       })
