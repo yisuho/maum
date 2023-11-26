@@ -28,12 +28,12 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const ms = Date.now() - now;
-        winstonLogger.info(`🔴 Completed [GraphQL] Query in ${ms}ms`);
+        winstonLogger.info(`✅ Completed [GraphQL] Query in ${ms}ms`);
       }),
       catchError((error) => {
         const ms = Date.now() - now;
         winstonLogger.error(
-          `🚨 [GraphQL] Query Error after ${ms}ms: ${error.message}`,
+          `🔴 [GraphQL] Query Error after ${ms}ms: ${error.message}`,
         );
         throw error;
       }),
