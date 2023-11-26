@@ -3,9 +3,6 @@
  - [설치 및 실행방법](#설치-및-실행방법) 
  - [ERD](#ERD)   
  - [GraphQL API ](#GraphQL-API )   
-4. [title4](#example)   
-    - [❓ EASYME.md가 뭐예요?](#-easymemd가-뭐예요)   
-    - [🛠 기능 엿보기](#-기능-엿보기)
 
 ## 설치 및 실행방법
 
