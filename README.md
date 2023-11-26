@@ -208,7 +208,7 @@ Error Message
 설문지 수정
 </summary>
 
-* 제목(title), 설명(description), 꼬리말(footer)을 변경하려는 설문지의 ID를 입력한 후, 새로운 제목, 설명, 꼬리말을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
+*설문지의 ID를 입력한 후,  제목(title), 설명(description), 꼬리말(footer)을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
 * 해당 설문지의 유무를 확인합니다.
 
 Error Message
@@ -327,7 +327,7 @@ Error Message
 </summary>
 
 * 문항의 Id 값을 입력하여 특정 문항을 조회합니다.
-* 해당 문항에 포함된 선택지 와 문항이 포함된 설문지에 대한 데이터를 함께 조회 할 수 있습니다.
+* 문항이 포함된 설문지와 해당 문항에 포함된 선택지에 대한 데이터를 함께 조회 할 수 있습니다.
 * 해당 문항의 유무를 확인합니다.
 
 Error Message
@@ -401,7 +401,7 @@ query{
 </details>
 
 <details><summary>
-설문지에 포함된 문항 조회
+설문지에 포함된 문항 조회
 </summary>
 
 * 설문지 ID를 입력하면, 해당 설문지에 포함된 모든 문항을 조회할 수 있습니다.
@@ -448,8 +448,8 @@ query{
 문항 수정
 </summary>
 
-* 문항 번호 (questionNumber), 문항 내용(content) 을 변경하려는 문항의 ID를 입력한 후, 문항 번호, 문항 내용을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
-* 문항을 수정시, 해당 설문지 내에 동일한 문항 번호와 내용의 유무를 중복 검사하여 확인합니다.
+*  문항의 ID를 입력한 후, 문항 번호 (questionNumber), 문항 내용(content)을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
+* 문항을 수정시, 해당 설문지 내에 본인을 제외한 동일한 문항 번호와 내용의 유무를 중복 검사하여 확인합니다.
 
 * 해당 문항의 유무를 확인합니다.
 
@@ -520,4 +520,227 @@ mutation{
 </details>
 
 
+#### - 선택지 CRUD
 
+<details><summary>
+설문지 생성
+</summary>
+
+* 소속된 문항의 ID(parentsQuestionId), 선택지 번호(choiceNumber), 선택지 내용(content),선택지 점수(point)를 입력하여 새로운 문항을 생성합니다.
+* 선택지 생성 시, 해당 문항 내에 동일한 선택지 번호,내용,점수의 유무를 중복 검사하여 확인합니다.
+
+Error Message
+```
+'문제에 동일한 보기번호가 존재합니다,보기번호를 변경하세요'
+'문제에 동일한 점수의 번호가 존재합니다,점수를 변경하세요'
+'문제에 동일한 보기내용이 존재합니다,보기내용을변경하세요'
+```
+
+
+### 쿼리
+```graphql
+mutation{
+  createChoice(createChoiceInput:{
+    parentsQuestionId:1,
+    choiceNumber:1,
+    content:"첫번째 문항 1번 선택지입니다.",
+    point:1
+    
+  }){
+    id
+    choiceNumber
+    content
+    point
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "createChoice": {
+      "id": 4,
+      "choiceNumber": 1,
+      "content": "첫번째 문항 1번 선택지입니다.",
+      "point": 1
+    }
+  }
+}
+```
+
+
+</details>
+
+<details><summary>
+선택지 단일 조회
+</summary>
+
+* 선택지의 Id 값을 입력하여 특정 선택지를 조회합니다.
+* 선택지가 포함된 문항에 대한 데이터를 함께 조회 할 수 있습니다.
+* 해당 선택지의 유무를 확인합니다.
+
+Error Message
+```
+'해당 보기가 없습니다.'
+```
+
+### 쿼리
+```graphql
+query{
+  choice(id:1){
+    id
+    parentsQuestion{
+      id
+    }
+    choiceNumber
+    content
+    point
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "choice": {
+      "id": 1,
+      "parentsQuestion": {
+        "id": 1
+      },
+      "choiceNumber": 1,
+      "content": "첫번째 문항 1번 선택지 입니다.",
+      "point": 1
+    }
+  }
+}
+```
+</details>
+
+<details><summary>
+문항에 포함된 선택지 조회
+</summary>
+
+* 문항 ID를 입력하면, 해당 문항에 포함된 모든 선택지를 조회할 수 있습니다.
+
+### 쿼리
+```graphql
+query{
+  findChoiceIncludQuestion(parentsQuestionId:1){
+    id
+    choiceNumber
+    content
+    point
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "findChoiceIncludQuestion": [
+      {
+        "id": 1,
+        "choiceNumber": 1,
+        "content": "첫번째 문항 1번 선택지 입니다.",
+        "point": 1
+      },
+      {
+        "id": 2,
+        "choiceNumber": 2,
+        "content": "첫번째 문항 2번 선택지 입니다.",
+        "point": 2
+      },
+      {
+        "id": 3,
+        "choiceNumber": 3,
+        "content": "1번 문제 3번 선택지 입니다.",
+        "point": 3
+      },
+      {
+        "id": 4,
+        "choiceNumber": 4,
+        "content": "첫번째 문항 4번 선택지입니다.",
+        "point": 4
+      }
+    ]
+  }
+}
+```
+
+
+</details>
+
+<details><summary>
+선택지 수정
+</summary>
+
+* 선택지의 ID를 입력한 후, 선택지 번호 (questionNumber), 선택지 내용(content),선택지 점수(point)를 변경하려는 를 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
+* 선택지 수정시, 해당 문항 내에 본인을 제외한 동일한 선택지 번호와 내용,점수의 유무를 중복 검사하여 확인합니다.
+* 해당 선택지의 유무를 확인합니다.
+
+Error Message
+```
+유무 확인
+'해당 ID:${id} 를 가진 문제가 없습니다.'
+
+중복확인
+'문제에 동일한 보기번호가 존재합니다,보기번호를 변경하세요'
+'문제에 동일한 점수의 번호가 존재합니다,점수를 변경하세요'
+'문제에 동일한 보기내용이 존재합니다,보기내용을변경하세요'
+```
+
+### 쿼리
+```graphql
+  mutation{
+  updateChoice(updateChoiceInput:{
+    id:3,
+    choiceNumber:5,
+    content:"첫번째 문항 5번 선택지 입니다.",
+    point:5
+  }){
+    id
+    content
+    point
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "updateChoice": {
+      "id": 3,
+      "content": "첫번째 문항 5번 선택지 입니다.",
+      "point": 5
+    }
+  }
+}
+```
+</details>
+
+<details><summary>
+선택지 삭제
+</summary>
+
+* 선택지의 Id 값을 입력하여 특정 선택지을 삭제합니다.
+* 삭제에 성공 하면 **true** 값을 반환하고 실패하면 **false** 값을 반환 합니다.
+
+### 쿼리
+```graphql
+  mutation{
+  removeChoice(id:1)
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "removeSurvey": true
+  }
+}
+```
