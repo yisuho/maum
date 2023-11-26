@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserSurveyInput } from './dto/create-user-survey.input';
-import { UpdateUserSurveyInput } from './dto/update-user-survey.input';
 import { EntityManager } from 'typeorm';
 import { UserSurvey } from './entities/user-survey.entity';
 import { Survey } from 'src/surveys/entities/survey.entity';

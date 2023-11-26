@@ -45,42 +45,42 @@ type CompleteUserSurvey {
   """User Survey Id"""
   id: Int!
 
-  """Original Survey Id"""
+  """Original Survey Id(Base Survey ID)"""
   originalSurveyId: Int!
 
-  """Complete User Survey ID"""
+  """Complete User Survey Title"""
   title: String!
 
-  """Complete User Survey ID"""
+  """Complete User Survey Description"""
   description: String!
 
-  """Complete User Survey ID"""
+  """Complete User Survey Footer"""
   footer: String!
 
-  """Complete User Survey ID"""
+  """Complete User Survey Total Score"""
   totalScore: Int!
 
-  """Complete User Survey ID"""
+  """Complete User Survey Question"""
   question: [CompletAnswer!]!
 }
 
 type CompletAnswer {
-  """Complete User Survey ID"""
+  """Answer ID"""
   id: Int!
 
-  """Complete User Survey ID"""
+  """Question No."""
   questionNumber: Int!
 
-  """Complete User Survey ID"""
+  """ Question Content"""
   content: String!
 
-  """Complete User Survey ID"""
+  """ User Question Select Choice ID"""
   selectChoiceId: Int!
 
-  """Complete User Survey ID"""
+  """User Question Select Choice Point"""
   point: Int!
 
-  """Complete User Survey ID"""
+  """Choices Included In Question """
   choice: [Choice!]!
 }
 
@@ -88,8 +88,10 @@ type UserSurvey {
   """Uers Survey ID"""
   id: Int!
 
-  """Parents Survey """
+  """Original Survey(Base Survey)"""
   originalSurvey: Survey!
+
+  """User Answers"""
   userAnswer: [UserAnswer!]!
 }
 
@@ -206,16 +208,18 @@ input UpdateChoiceInput {
 }
 
 input CreateUserAnswerInput {
-  """Example field (placeholder)"""
+  """Original Survey ID(Base Survey ID)"""
   OriginalSurveyId: Int!
+
+  """User Answers"""
   userAnswer: [Answer!]!
 }
 
 input Answer {
-  """Question No."""
+  """Question ID"""
   questionId: Int!
 
-  """Choice No."""
+  """Select Choice ID"""
   selectChoiceId: Int!
 }
 

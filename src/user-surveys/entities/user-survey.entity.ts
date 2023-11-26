@@ -18,7 +18,7 @@ export class UserSurvey {
 
   @Field(() => Survey, {
     nullable: false,
-    description: 'Parents Survey ',
+    description: 'Original Survey(Base Survey)',
   })
   @ManyToOne(() => Survey, (survey) => survey.userSurvey, {
     onDelete: 'CASCADE',
@@ -26,7 +26,10 @@ export class UserSurvey {
   @JoinColumn({ name: 'original_survey' })
   originalSurvey: Survey;
 
-  @Field(() => [UserAnswer])
+  @Field(() => [UserAnswer], {
+    nullable: false,
+    description: 'User Answers',
+  })
   @OneToMany(() => UserAnswer, (UserAnswer) => UserAnswer.parentsUserSurvey)
   userAnswer: UserAnswer[];
 }

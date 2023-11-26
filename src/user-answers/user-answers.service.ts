@@ -97,7 +97,7 @@ export class UserAnswersService {
     return;
   }
 
-  checkForDuplicateUserAnswers(userAnswer: Answer[]): void {
+  private checkForDuplicateUserAnswers(userAnswer: Answer[]): void {
     const checkForDuplicateUserAnswersHash = new Map();
     for (const answer of userAnswer) {
       if (checkForDuplicateUserAnswersHash.has(answer.questionId)) {
@@ -107,7 +107,7 @@ export class UserAnswersService {
     }
   }
 
-  checkQuestionAnswerCountMatch(
+  private checkQuestionAnswerCountMatch(
     originalSurvey: Survey,
     userAnswer: Answer[],
   ): void {
@@ -142,7 +142,10 @@ export class UserAnswersService {
     }
   }
 
-  checkQuestionAnswerMatch(originalSurvey: Survey, userAnswer: Answer[]): void {
+  private checkQuestionAnswerMatch(
+    originalSurvey: Survey,
+    userAnswer: Answer[],
+  ): void {
     const originalSurveyQuestionHash = new Map();
 
     originalSurvey.question.map((question) => {
@@ -158,7 +161,7 @@ export class UserAnswersService {
     });
   }
 
-  async selectChoiceOfPoint(
+  private async selectChoiceOfPoint(
     questionId: number,
     selectChoiceId: number,
     manager: EntityManager,

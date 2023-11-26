@@ -45,59 +45,72 @@ export class CompleteUserSurvey {
   @Field(() => Int, { nullable: false, description: 'User Survey Id' })
   id: number;
 
-  @Field(() => Int, { nullable: false, description: 'Original Survey Id' })
+  @Field(() => Int, {
+    nullable: false,
+    description: 'Original Survey Id(Base Survey ID)',
+  })
   originalSurveyId: number;
 
   @Field(() => String, {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: 'Complete User Survey Title',
   })
   title: string;
 
   @Field(() => String, {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: 'Complete User Survey Description',
   })
   description: string;
 
   @Field(() => String, {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: 'Complete User Survey Footer',
   })
   footer: string;
 
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  @Field(() => Int, {
+    nullable: false,
+    description: 'Complete User Survey Total Score',
+  })
   totalScore: number;
 
   @Field(() => [CompletAnswer], {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: 'Complete User Survey Question',
   })
   question: CompletAnswer[];
 }
 
 @ObjectType()
 export class CompletAnswer {
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  @Field(() => Int, { nullable: false, description: 'Answer ID' })
   id: number;
 
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  @Field(() => Int, { nullable: false, description: 'Question No.' })
   questionNumber: number;
 
   @Field(() => String, {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: ' Question Content',
   })
   content: string;
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+
+  @Field(() => Int, {
+    nullable: false,
+    description: ' User Question Select Choice ID',
+  })
   selectChoiceId: number;
 
-  @Field(() => Int, { nullable: false, description: 'Complete User Survey ID' })
+  @Field(() => Int, {
+    nullable: false,
+    description: 'User Question Select Choice Point',
+  })
   point: number;
 
   @Field(() => [Choice], {
     nullable: false,
-    description: 'Complete User Survey ID',
+    description: 'Choices Included In Question ',
   })
   choice: Choice[];
 }

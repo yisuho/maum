@@ -74,7 +74,6 @@ export class UserAnswersResolver {
         id,
         manager,
       );
-      console.log(findOneUserAnswer);
 
       return findOneUserAnswer;
     });

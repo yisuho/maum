@@ -113,6 +113,4 @@ export class QuestionsService {
 
     return checkQuestion;
   }
-
-  //설문지에 포함된 문제들 전체보기
 }
