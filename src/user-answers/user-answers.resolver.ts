@@ -1,13 +1,11 @@
 import { UserSurveysService } from './../user-surveys/user-surveys.service';
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UserAnswersService } from './user-answers.service';
-import { CompleteUserSurvey, UserAnswer } from './entities/user-answer.entity';
+import { UserAnswer } from './entities/user-answer.entity';
 import { CreateUserAnswerInput } from './dto/create-user-answer.input';
 import { UpdateUserAnswerInput } from './dto/update-user-answer.input';
 import { SurveysService } from 'src/surveys/surveys.service';
-import { UserSurvey } from 'src/user-surveys/entities/user-survey.entity';
 import { CreateAnswerInfo } from './model/user-answer.model';
-import { CompleteUserSurveyInfo } from 'src/user-surveys/model/user-surveys.model';
 import { DataSource } from 'typeorm';
 import { Inject } from '@nestjs/common';
 
@@ -21,10 +19,10 @@ export class UserAnswersResolver {
     private dataSource: DataSource,
   ) {}
 
-  @Mutation(() => CompleteUserSurvey)
+  @Mutation(() => [UserAnswer])
   async createUserAnswer(
     @Args('createUserAnswerInput') createUserAnswerInput: CreateUserAnswerInput,
-  ): Promise<CompleteUserSurvey> {
+  ): Promise<UserAnswer[]> {
     return await this.dataSource.transaction(async (manager) => {
       const originalSurvey = await this.surveysService.findOne(
         createUserAnswerInput.OriginalSurveyId,
@@ -36,13 +34,13 @@ export class UserAnswersResolver {
         createUserAnswerInput.userAnswer,
       );
 
-      const userSurvey = await this.userSurveysService.create(
+      const createUserSurvey = await this.userSurveysService.create(
         originalSurvey,
         manager,
       );
 
       const createAnswerInfo: CreateAnswerInfo = {
-        parentsUserSurvey: userSurvey,
+        parentsUserSurvey: createUserSurvey,
         userAnswer: createUserAnswerInput.userAnswer,
       };
       const createUserAnswer = await this.userAnswersService.create(
@@ -50,18 +48,22 @@ export class UserAnswersResolver {
         manager,
       );
 
-      const completeUserSurveyInfo: CompleteUserSurveyInfo = {
-        createUserAnswer,
-        originalSurvey,
-        userSurvey,
-      };
+      return createUserAnswer;
+    });
+  }
 
-      const completeUserSurvey =
-        await this.userSurveysService.completeUserSurvey(
-          completeUserSurveyInfo,
+  @Query(() => [UserAnswer], { name: 'findAnswersIncludUserSurvey' })
+  async findAnswersIncludUserSurvey(
+    @Args('userSurveyId', { type: () => Int }) userSurveyId: number,
+  ): Promise<UserAnswer[]> {
+    return await this.dataSource.transaction(async (manager) => {
+      const findAnswersIncludSurvey =
+        await this.userAnswersService.findAnswersIncludUserSurvey(
+          userSurveyId,
+          manager,
         );
 
-      return completeUserSurvey;
+      return findAnswersIncludSurvey;
     });
   }
 

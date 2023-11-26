@@ -37,6 +37,20 @@ export class QuestionsResolver {
     });
   }
 
+  @Query(() => [Question], { name: 'findQuestionIncludSurvey' })
+  async findQuestionIncludSurvey(
+    @Args('parentsSurveyId', { type: () => Int }) parentsSurveyId: number,
+  ): Promise<Question[]> {
+    return await this.dataSource.transaction(async (manager) => {
+      const findQuestionIncludSurvey =
+        await this.questionsService.findQuestionIncludSurvey(
+          parentsSurveyId,
+          manager,
+        );
+      return findQuestionIncludSurvey;
+    });
+  }
+
   @Mutation(() => Question)
   async updateQuestion(
     @Args('updateQuestionInput') updateQuestionInput: UpdateQuestionInput,

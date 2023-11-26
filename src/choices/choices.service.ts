@@ -49,6 +49,19 @@ export class ChoicesService {
     return findOne;
   }
 
+  async findChoiceIncludQuestion(
+    parentsQuestionId: number,
+    manager: EntityManager,
+  ): Promise<Choice[]> {
+    const findChoiceIncludQuestion = await manager
+      .createQueryBuilder(Choice, 'choice')
+      .where('choice.parentsQuestion =:parentsQuestionId', {
+        parentsQuestionId,
+      })
+      .getMany();
+    return findChoiceIncludQuestion;
+  }
+
   async update(
     id: number,
     updateChoiceInput: UpdateChoiceInput,

@@ -35,6 +35,20 @@ export class ChoicesResolver {
     });
   }
 
+  @Query(() => [Choice], { name: 'findChoiceIncludQuestion' })
+  async findChoiceIncludQuestion(
+    @Args('parentsQuestionId', { type: () => Int }) parentsQuestionId: number,
+  ): Promise<Choice[]> {
+    return await this.dataSource.transaction(async (manager) => {
+      const findChoiceIncludQuestion =
+        await this.choicesService.findChoiceIncludQuestion(
+          parentsQuestionId,
+          manager,
+        );
+      return findChoiceIncludQuestion;
+    });
+  }
+
   @Mutation(() => Choice)
   async updateChoice(
     @Args('updateChoiceInput') updateChoiceInput: UpdateChoiceInput,

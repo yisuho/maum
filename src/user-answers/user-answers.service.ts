@@ -19,18 +19,14 @@ export class UserAnswersService {
     const { parentsUserSurvey, userAnswer } = createAnswerInfo;
 
     const createUserAnswer = userAnswer.map(async (answer) => {
-      return await this.createAndSaveUserAnswer(
-        answer,
-        parentsUserSurvey,
-        manager,
-      );
+      return await this.saveUserAnswer(answer, parentsUserSurvey, manager);
     });
     const savedAnswers = await Promise.all(createUserAnswer);
 
     return savedAnswers;
   }
 
-  async createAndSaveUserAnswer(
+  async saveUserAnswer(
     answer: Answer,
     parentsUserSurvey: UserSurvey,
     manager: EntityManager,
@@ -47,8 +43,23 @@ export class UserAnswersService {
       selectChoiceId: answer.selectChoiceId,
       point: selectChoiceOfPoint,
     });
-    const saveAnswer = manager.save(UserAnswer, createAnswer);
+
+    const saveAnswer = await manager.save(UserAnswer, createAnswer);
+
     return saveAnswer;
+  }
+
+  async findAnswersIncludUserSurvey(
+    userSurveyId: number,
+    manager: EntityManager,
+  ): Promise<UserAnswer[]> {
+    const findAnswersIncludUserSurvey = await manager
+      .createQueryBuilder(UserAnswer, 'userAnswer')
+      .leftJoinAndSelect('userAnswer.parentsUserSurvey', 'userSurvey')
+      .where('userAnswer.parentsUserSurvey=:userSurveyId', { userSurveyId })
+      .getMany();
+
+    return findAnswersIncludUserSurvey;
   }
 
   async findOne(id: number, manager: EntityManager): Promise<UserAnswer> {
@@ -112,6 +123,9 @@ export class UserAnswersService {
     userAnswer: Answer[],
   ): void {
     const surveyQuestion = originalSurvey.question;
+    if (!userAnswer.length) {
+      throw new Error(`입력된 답변이 없습니다.`);
+    }
 
     if (surveyQuestion.length !== userAnswer.length) {
       if (surveyQuestion.length > userAnswer.length) {

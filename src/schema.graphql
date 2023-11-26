@@ -114,8 +114,12 @@ type Query {
   surveys: [Survey!]!
   survey(id: Int!): Survey!
   question(id: Int!): Question!
+  findQuestionIncludSurvey(parentsSurveyId: Int!): [Question!]!
   choice(id: Int!): Choice!
+  findChoiceIncludQuestion(parentsQuestionId: Int!): [Choice!]!
+  findAnswersIncludUserSurvey(userSurveyId: Int!): [UserAnswer!]!
   userAnswer(id: Int!): UserAnswer!
+  UserSurveys: [UserSurvey!]!
   userSurvey(id: Int!): CompleteUserSurvey!
 }
 
@@ -129,7 +133,7 @@ type Mutation {
   createChoice(createChoiceInput: CreateChoiceInput!): Choice!
   updateChoice(updateChoiceInput: UpdateChoiceInput!): Choice!
   removeChoice(id: Int!): Boolean!
-  createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): CompleteUserSurvey!
+  createUserAnswer(createUserAnswerInput: CreateUserAnswerInput!): [UserAnswer!]!
   updateUserAnswer(updateUserAnswerInput: UpdateUserAnswerInput!): UserAnswer!
   removeUserAnswer(id: Int!): Boolean!
 }

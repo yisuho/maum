@@ -48,6 +48,17 @@ export class QuestionsService {
     return findOne;
   }
 
+  async findQuestionIncludSurvey(
+    parentsSurveyId: number,
+    manager: EntityManager,
+  ): Promise<Question[]> {
+    const findQuestionIncludSurvey = await manager
+      .createQueryBuilder(Question, 'question')
+      .where('question.parentsSurvey =:parentsSurveyId', { parentsSurveyId })
+      .getMany();
+    return findQuestionIncludSurvey;
+  }
+
   async update(
     id: number,
     updateQuestionInput: UpdateQuestionInput,

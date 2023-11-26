@@ -13,6 +13,14 @@ export class UserSurveysResolver {
     private readonly userSurveysService: UserSurveysService,
   ) {}
 
+  @Query(() => [UserSurvey], { name: 'UserSurveys' })
+  async findAll(): Promise<UserSurvey[]> {
+    return await this.dataSource.transaction(async (manager) => {
+      const findAll = await this.userSurveysService.findAll(manager);
+      return findAll;
+    });
+  }
+
   @Query(() => CompleteUserSurvey, { name: 'userSurvey' })
   async findOne(
     @Args('id', { type: () => Int }) id: number,

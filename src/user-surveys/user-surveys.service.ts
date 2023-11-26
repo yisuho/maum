@@ -23,6 +23,14 @@ export class UserSurveysService {
     return saveUserSurvey;
   }
 
+  async findAll(manager: EntityManager): Promise<UserSurvey[]> {
+    const findAll = await manager
+      .createQueryBuilder(UserSurvey, 'userSurvey')
+      .leftJoinAndSelect('userSurvey.originalSurvey', 'survey')
+      .getMany();
+    return findAll;
+  }
+
   async findOne(
     id: number,
     manager: EntityManager,
