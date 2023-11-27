@@ -1127,6 +1127,10 @@ query{
               "id": 5,
               "choiceNumber": 1,
               "point": 1
+            },{
+              "id": 7,
+              "choiceNumber": 2,
+              "point": 2
             }
           ]
         },
@@ -1140,6 +1144,10 @@ query{
               "id": 6,
               "choiceNumber": 1,
               "point": 1
+            }, {
+              "id": 8,
+              "choiceNumber": 2,
+              "point": 2
             }
           ]
         }
