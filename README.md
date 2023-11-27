@@ -45,7 +45,16 @@ DATABASE_PASSWORD=maumsurvey
 DATABASE_PORT=5432
 ```
 
-3.실행방법
+3.PostgreSQL 데이터베이스 설정
+
+```bash
+Host: localhost
+Database:maum_survey
+Username:postgres
+Password:maumsurvey
+```
+
+4.실행방법
 
 ```bash
 # development
