@@ -401,7 +401,7 @@ query{
 </details>
 
 <details><summary>
-설문지에 포함된 문항 조회
+설문지에 포함된 문항 조회
 </summary>
 
 * 설문지 ID를 입력하면, 해당 설문지에 포함된 모든 문항을 조회할 수 있습니다.
@@ -677,7 +677,7 @@ query{
 선택지 수정
 </summary>
 
-* 선택지의 ID를 입력한 후, 선택지 번호 (questionNumber), 선택지 내용(content),선택지 점수(point)를 변경하려는 를 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
+* 선택지의 ID를 입력한 후, 선택지 번호 (questionNumber), 선택지 내용(content),선택지 점수(point)를 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
 * 선택지 수정시, 해당 문항 내에 본인을 제외한 동일한 선택지 번호와 내용,점수의 유무를 중복 검사하여 확인합니다.
 * 해당 선택지의 유무를 확인합니다.
 
@@ -744,3 +744,410 @@ Error Message
   }
 }
 ```
+</details>
+
+####  - 답변 CRUD
+
+<details><summary>
+답변 생성 및 설문지 완료
+</summary>
+* 답변은  "기본 설문지"의 모든 문항에 대한 답변을 한 번에 수집하여 데이터를 처리합니다.
+
+1. 사용자가 "기본 설문지"의 ID(OriginalSurveyId), 각 문항의 ID(questionId), 그리고 선택한 선택지의 ID(selectChoiceId)를 userAnswer 배열에 입력하여 응답을 전송하면, 시스템은 먼저 이 정보를 바탕으로 새로운 "사용자 응답 설문지(user survey)"를 생성합니다.
+2. 그 다음, 선택한 각 선택지의 ID에 해당하는 점수(point)를 찾습니다.
+3. 마지막으로, 시스템은 각 문항의 ID, 선택한 선택지의 ID, 해당 선택지의 점수, 그리고 생성된 응답 설문지의 고유 ID를 저장합니다.
+4. 데이터가 저장이 되면 설문지가 완료 됩니다.
+
+* 답변이 입력되면 같은 문항에 중복된 답변이 있는지 확인합니다.
+* 답변이 입력되면 해당 기본설문지의 전체 문항 수와 제출된 답변의 수를 비교합니다.
+
+Error Message
+```
+같은 문항에 중복된 답변 확인 
+"같은 질문에 중복된 답변이 존재합니다."
+
+전체 문항 수와 제출된 답변의 수 비교 
+"입력된 답변이 없습니다."
+"${emptyAnswersQuestionNumber}번 문제의 답변이 없습니다."
+"문제의 수를 확인해 주세요.문제보다 많은 수의 답변이 입력되었습니다."
+```
+
+
+### 쿼리
+```graphql
+mutation{
+  createUserAnswer(createUserAnswerInput:{
+    OriginalSurveyId:1
+    userAnswer:[
+      {
+        questionId:1
+        selectChoiceId:1
+      },
+        {
+        questionId:2
+        selectChoiceId:5
+      },{
+        questionId:3
+        selectChoiceId:6
+      }
+    ]
+  })
+    {
+      id
+      questionId
+      selectChoiceId
+      point
+      parentsUserSurvey{
+        id
+      }
+      
+    },
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "createUserAnswer": [
+      {
+        "id": 1,
+        "questionId": 1,
+        "selectChoiceId": 1,
+        "point": 1,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      },
+      {
+        "id": 2,
+        "questionId": 2,
+        "selectChoiceId": 5,
+        "point": 1,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      },
+      {
+        "id": 3,
+        "questionId": 3,
+        "selectChoiceId": 6,
+        "point": 1,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      }
+    ]
+  }
+}
+```
+
+
+</details>
+
+<details><summary>
+답변 단일 조회
+</summary>
+
+* 사용자 답변의 Id 값을 입력하여 특정 사용자 답변을 조회합니다.
+* 사용자 답변의 부모 사용자 응답 설문지 와 기본 설문지에 대한 데이터를 함께 조회 할 수 있습니다.
+* 해당 사용자 답변의 유무를 확인합니다.
+
+Error Message
+```
+"저장된 사용자 답변이 없습니다."
+```
+
+
+
+### 쿼리
+```graphql
+query{
+  userAnswer(id:1){
+    id
+    questionId
+    selectChoiceId
+    parentsUserSurvey{
+      id
+      originalSurvey{
+        id
+        title
+        description
+        footer
+      }
+    }
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "userAnswer": {
+      "id": 1,
+      "questionId": 1,
+      "selectChoiceId": 1,
+      "parentsUserSurvey": {
+        "id": 1,
+        "originalSurvey": {
+          "id": 1,
+          "title": "마음연구소",
+          "description": "마음연구소",
+          "footer": "끝."
+        }
+      }
+    }
+  }
+}
+```
+
+
+</details>
+
+<details><summary>
+사용자 응답 설문지에 포함된 사용자 답변 조회
+</summary>
+
+* 사용자 응답 설문지 ID(userSurveyId)를 입력하면, 해당 사용자 응답 설문지에 포함된 모든 사용자 답변을 조회할 수 있습니다.
+* 사용자 응답 설문지의 유무를 확인합니다.
+
+Error Message
+```
+"저장된 사용자 응답 설문지가 없습니다."
+```
+
+
+
+
+### 쿼리
+```graphql
+query{
+  findAnswersIncludUserSurvey(userSurveyId:1){
+    id
+    questionId
+    selectChoiceId
+    parentsUserSurvey{
+      id
+    }
+  }
+}```
+
+### 결과
+```graphql
+{
+  "data": {
+    "findAnswersIncludUserSurvey": [
+      {
+        "id": 1,
+        "questionId": 1,
+        "selectChoiceId": 1,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      },
+      {
+        "id": 2,
+        "questionId": 2,
+        "selectChoiceId": 5,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      },
+      {
+        "id": 3,
+        "questionId": 3,
+        "selectChoiceId": 6,
+        "parentsUserSurvey": {
+          "id": 1
+        }
+      }
+    ]
+  }
+}
+```
+</details>
+
+<details><summary>
+답변 수정
+</summary>
+
+* 답변의 ID를 입력한 후, 선택한 선택지 ID(selectChoiceId) 를 입력하여 해당 답변의 데이터를 수정할 수 있습니다.
+* 시스템은 제공된 선택지 ID에 해당하는 점수(point)를 찾아 해당 답변의 점수 데이터를 수정합니다.
+* 해당 답변의 유무 와 선택한 선택지의 유무를 확인합니다.
+
+Error Message
+```
+답변의 유무 확인 
+'저장된 사용자 답변이 없습니다.'
+
+선택한 선택지의 유무 확인
+'해당 보기가 없습니다.'
+```
+
+
+### 쿼리
+```graphql
+mutation{
+  updateUserAnswer(updateUserAnswerInput:{
+    id:1
+    selectChoiceId:2
+  }){
+    id
+    questionId
+    selectChoiceId
+    point
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "updateUserAnswer": {
+      "id": 1,
+      "questionId": 1,
+      "selectChoiceId": 2,
+      "point": 2
+    }
+  }
+}
+```
+</details>
+
+<details><summary>
+답변 삭제
+</summary>
+
+* 답변의 Id 값을 입력하여 특정 답변을 삭제합니다.
+* 삭제에 성공 하면 true 값을 반환하고 실패하면 false 값을 반환 합니다.
+
+### 쿼리
+```graphql
+mutation{
+  removeUserAnswer(id:6)
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "removeSurvey": true
+  }
+}
+```
+</details>
+
+
+####  - 완료된 설문지 확인
+
+<details><summary>
+완료된 설문지 확인
+</summary>
+
+* 응답 설문지의 ID 값을 입력하여 완료된 응답 설문지를 조회합니다.
+1. 반환되는 정보에는 사용자가 응답한 "**기본 설문지**"의 기본 정보(제목, 설명 등), 설문지에 포함된 각 "**문항**", 문항별 "**선택지**", 그리고 사용자의 "**답변**"이 포함됩니다. 이 정보는 사용자의 답변과 각 문항의 선택지 정보를 통합하여 제공됩니다.
+2. 사용자의 모든 답변에 대한 총 점수(totalScore)가 계산되어 표시됩니다.
+3. 각 문항에서 사용자가 선택한 선택지의 ID(selectChoiceId)가 제공되어, 사용자가 어떤 선택을 했는지 확인할 수 있습니다.
+
+### 쿼리
+```graphql
+query{
+  userSurvey(id:1){
+    id
+    originalSurveyId
+    title
+    description
+    footer
+    totalScore
+    question{
+      id
+      questionNumber
+      content
+      selectChoiceId
+      choice{
+        id
+        choiceNumber
+        point
+      }
+    }
+  }
+}
+```
+
+### 결과
+```graphql
+{
+  "data": {
+    "userSurvey": {
+      "id": 1,
+      "originalSurveyId": 1,
+      "title": "마음연구소 설문지",
+      "description": "마음연구소 설문지 입니다.",
+      "footer": "마음연구소 설문지 였습니다.",
+      "totalScore": 4,
+      "question": [
+        {
+          "id": 1,
+          "questionNumber": 1,
+          "content": "1번 문항",
+          "selectChoiceId": 2,
+          "choice": [
+            {
+              "id": 1,
+              "choiceNumber": 1,
+              "point": 1
+            },
+            {
+              "id": 2,
+              "choiceNumber": 2,
+              "point": 2
+            },
+            {
+              "id": 4,
+              "choiceNumber": 4,
+              "point": 4
+            },
+            {
+              "id": 3,
+              "choiceNumber": 5,
+              "point": 5
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "questionNumber": 2,
+          "content": "두번째 문항 입니다.",
+          "selectChoiceId": 5,
+          "choice": [
+            {
+              "id": 5,
+              "choiceNumber": 1,
+              "point": 1
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "questionNumber": 3,
+          "content": "세번째 문항 입니다.",
+          "selectChoiceId": 6,
+          "choice": [
+            {
+              "id": 6,
+              "choiceNumber": 1,
+              "point": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+
+</details>
