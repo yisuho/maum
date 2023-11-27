@@ -1,5 +1,6 @@
 ## 마음연구소 기업과제
 ### 목차
+ - [구현 설명](#구현-설명)
  - [설치 및 실행방법](#설치-및-실행방법) 
  - [ERD](#erd)   
  - [GraphQL API ](#graphql-api)   
@@ -8,6 +9,22 @@
     - [선택지 CRUD](#--선택지-crud)
     - [답변 CRUD](#--답변-crud)
     - [완료된 설문지 확인](#--완료된-설문지-확인)
+
+##  구현 설명
+
+><span style="color:black;">관리자가 다양한 설문지를 효율적으로 관리할 수 있도록 설계 하였습니다.</br></span>
+><span style="color:black;">관리자는 설문지를 새로 등록 하고 필요에 따라 기존 설문지를 수정하거나 삭제할 수 있도록 하였습니다.</br></span>
+>
+><span style="color:black;">사용자는 등록된 설문지 중에서 하나를 선택하거나 관리자가 지정한 설문지에 대해 응답을 할 수 있도록 하였습니다.</br></span>
+><span style="color:black;">사용자가 설문지 작성을 시작하면 설문지의 문항,선택지를 표시하고 사용자가 이에 답변을 입력할 수 있도록 하였습니다.</br></span>
+>
+><span style="color:black;">설문지에 대한 응답이 완료되면 사용자의 답변을 기반으로 설문지의 총점을 계산하고</br></span>
+><span style="color:black;">사용자가 제공한 응답과 설문지의 내용을 통합하여 완성된 설문지를 사용자에게 보여 줄 수 있도록 하였습니다.</span>
+>
+><span style="color:black;">이 통해 사용자는 자신의 응답과 설문지 전체에 대한 평과 결과를 확인 할 수 있습니다.</span>
+
+
+
 
 ## 설치 및 실행방법
 
@@ -213,7 +230,7 @@ Error Message
 설문지 수정
 </summary>
 
-*설문지의 ID를 입력한 후,  제목(title), 설명(description), 꼬리말(footer)을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
+* 설문지의 ID를 입력한 후,  제목(title), 설명(description), 꼬리말(footer)을 입력하여 해당 설문지의 데이터를 수정할 수 있습니다.
 * 해당 설문지의 유무를 확인합니다.
 
 Error Message
@@ -756,6 +773,7 @@ Error Message
 <details><summary>
 답변 생성 및 설문지 완료
 </summary>
+
 * 답변은  "기본 설문지"의 모든 문항에 대한 답변을 한 번에 수집하여 데이터를 처리합니다.
 
 1. 사용자가 "기본 설문지"의 ID(OriginalSurveyId), 각 문항의 ID(questionId), 그리고 선택한 선택지의 ID(selectChoiceId)를 userAnswer 배열에 입력하여 응답을 전송하면, 시스템은 먼저 이 정보를 바탕으로 새로운 "사용자 응답 설문지(user survey)"를 생성합니다.
