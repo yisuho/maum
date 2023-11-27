@@ -46,7 +46,7 @@ export class UserSurveysService {
     });
 
     if (!userSurvey) {
-      throw new Error('저장된 사용자 작성 설문지가 없습니다.');
+      throw new Error('저장된 사용자 응답 설문지가 없습니다.');
     }
 
     const completeUserSurveyInfo: CompleteUserSurveyInfo = {

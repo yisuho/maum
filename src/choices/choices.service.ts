@@ -53,11 +53,16 @@ export class ChoicesService {
     parentsQuestionId: number,
     manager: EntityManager,
   ): Promise<Choice[]> {
+    const checkQuestion = this.questionsService.findOne(
+      parentsQuestionId,
+      manager,
+    );
     const findChoiceIncludQuestion = await manager
       .createQueryBuilder(Choice, 'choice')
       .where('choice.parentsQuestion =:parentsQuestionId', {
         parentsQuestionId,
       })
+      .orderBy('choice.choiceNumber', 'ASC')
       .getMany();
     return findChoiceIncludQuestion;
   }
@@ -125,7 +130,7 @@ export class ChoicesService {
         );
       } else if (checkChoice.point === point) {
         throw new Error(
-          '문제에 동일한 점수의 번호가 존재합니다,번호 점수를 변경하세요',
+          '문제에 동일한 점수의 번호가 존재합니다,점수를 변경하세요',
         );
       } else if (checkChoice.content === content) {
         throw new Error(

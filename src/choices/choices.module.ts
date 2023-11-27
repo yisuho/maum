@@ -7,5 +7,6 @@ import { QuestionsModule } from 'src/questions/questions.module';
 @Module({
   imports: [databaseModule, QuestionsModule],
   providers: [ChoicesResolver, ChoicesService],
+  exports: [ChoicesService],
 })
 export class ChoicesModule {}

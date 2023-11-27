@@ -1,3 +1,5 @@
+import { ChoicesService } from './../choices/choices.service';
+import { UserSurveysService } from './../user-surveys/user-surveys.service';
 import { QuestionsService } from './../questions/questions.service';
 import { Injectable } from '@nestjs/common';
 import { UpdateUserAnswerInput } from './dto/update-user-answer.input';
@@ -10,7 +12,11 @@ import { UserSurvey } from 'src/user-surveys/entities/user-survey.entity';
 
 @Injectable()
 export class UserAnswersService {
-  constructor(private questionsService: QuestionsService) {}
+  constructor(
+    private questionsService: QuestionsService,
+    private userSurveysService: UserSurveysService,
+    private choicesService: ChoicesService,
+  ) {}
 
   async create(
     createAnswerInfo: CreateAnswerInfo,
@@ -53,6 +59,11 @@ export class UserAnswersService {
     userSurveyId: number,
     manager: EntityManager,
   ): Promise<UserAnswer[]> {
+    const checkUserSurvey = await this.userSurveysService.findOne(
+      userSurveyId,
+      manager,
+    );
+
     const findAnswersIncludUserSurvey = await manager
       .createQueryBuilder(UserAnswer, 'userAnswer')
       .leftJoinAndSelect('userAnswer.parentsUserSurvey', 'userSurvey')
@@ -63,7 +74,12 @@ export class UserAnswersService {
   }
 
   async findOne(id: number, manager: EntityManager): Promise<UserAnswer> {
-    const findOne = await manager.findOne(UserAnswer, { where: { id } });
+    const findOne = await manager
+      .createQueryBuilder(UserAnswer, 'userAnswer')
+      .leftJoinAndSelect('userAnswer.parentsUserSurvey', 'userSurvey')
+      .leftJoinAndSelect('userSurvey.originalSurvey', 'survey')
+      .where('userAnswer.id=:id', { id })
+      .getOne();
     if (!findOne) {
       throw new Error('저장된 사용자 답변이 없습니다.');
     }
@@ -75,8 +91,18 @@ export class UserAnswersService {
     updateUserAnswerInput: UpdateUserAnswerInput,
     manager: EntityManager,
   ): Promise<UserAnswer> {
+    const checkUserAnswer = await this.findOne(id, manager);
+    const checkChoice = await this.choicesService.findOne(
+      updateUserAnswerInput.selectChoiceId,
+      manager,
+    );
+    const findQuestion = await this.choicesService.findOne(
+      updateUserAnswerInput.selectChoiceId,
+      manager,
+    );
+
     const selectChoiceOfPoint = await this.selectChoiceOfPoint(
-      updateUserAnswerInput.questionId,
+      findQuestion.parentsQuestion.id,
       updateUserAnswerInput.selectChoiceId,
       manager,
     );
@@ -112,7 +138,7 @@ export class UserAnswersService {
     const checkForDuplicateUserAnswersHash = new Map();
     for (const answer of userAnswer) {
       if (checkForDuplicateUserAnswersHash.has(answer.questionId)) {
-        throw new Error(`동일한 질문에 중복된 답변이 존재 합니다.`);
+        throw new Error(`같은 질문에 중복된 답변이 존재합니다.`);
       }
       checkForDuplicateUserAnswersHash.set(answer.questionId, 1);
     }
@@ -150,7 +176,7 @@ export class UserAnswersService {
         );
       } else if (surveyQuestion.length < userAnswer.length) {
         throw new Error(
-          '문제의 수를 확인해 주세요.문제 보다 많은 수 의 답변이 입력 되었습니다.',
+          '문제의 수를 확인해 주세요.문제보다 많은 수의 답변이 입력되었습니다.',
         );
       }
     }

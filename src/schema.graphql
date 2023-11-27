@@ -231,9 +231,6 @@ input UpdateUserAnswerInput {
   """User Answer ID"""
   id: Int!
 
-  """Question ID"""
-  questionId: Int
-
   """User Select Choice ID"""
   selectChoiceId: Int
 }

@@ -5,6 +5,7 @@ import { databaseModule } from 'src/database/database.module';
 import { SurveysModule } from 'src/surveys/surveys.module';
 import { UserSurveysModule } from 'src/user-surveys/user-surveys.module';
 import { QuestionsModule } from 'src/questions/questions.module';
+import { ChoicesModule } from 'src/choices/choices.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { QuestionsModule } from 'src/questions/questions.module';
     UserSurveysModule,
     SurveysModule,
     QuestionsModule,
+    ChoicesModule,
   ],
   providers: [UserAnswersResolver, UserAnswersService],
 })

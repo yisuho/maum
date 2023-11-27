@@ -52,9 +52,14 @@ export class QuestionsService {
     parentsSurveyId: number,
     manager: EntityManager,
   ): Promise<Question[]> {
+    const checkSurvey = await this.surveysService.findOne(
+      parentsSurveyId,
+      manager,
+    );
     const findQuestionIncludSurvey = await manager
       .createQueryBuilder(Question, 'question')
       .where('question.parentsSurvey =:parentsSurveyId', { parentsSurveyId })
+      .orderBy('question.questionNumber', 'ASC')
       .getMany();
     return findQuestionIncludSurvey;
   }
